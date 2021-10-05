@@ -1,5 +1,5 @@
 import {expect} from 'chai'
-import {calculate} from '../../src/fraction';
+import {calculate} from '../../src/fraction'
 // import { expect } from 'chai'
 
 
