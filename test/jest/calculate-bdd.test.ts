@@ -1,4 +1,4 @@
-import {calculate} from '../../src/fraction'
+import {calculate} from '../../src/calculate'
 
 describe('It', () => {
     describe('should', () => {

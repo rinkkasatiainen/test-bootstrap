@@ -1,1 +1,1 @@
-export { Fraction, BuildFraction } from './src/fraction'
+export { Fraction, BuildFraction } from './src/calculate'

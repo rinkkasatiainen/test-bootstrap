@@ -1,7 +1,5 @@
 import {expect} from 'chai'
-import {calculate} from '../../src/fraction'
-// import { expect } from 'chai'
-
+import {calculate} from '../../src/calculate'
 
 describe('It', () => {
     describe('should', () => {
