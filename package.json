@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "yarn run tsc -p .",
-    "test": "yarn run test:m; yarn run test:j",
-    "test:m": "NODE_ENV=test ts-mocha test/**/**.spec.ts ",
-    "test:j": "NODE_ENV=test jest test/**/**.test.ts",
+    "test": "yarn run test:m",
+    "test:m": "NODE_ENV=test ts-mocha test/**/*.test.ts ",
     "test:w": "npm run test -- --watch",
     "lint": "eslint -- src test",
     "lint:fix": "eslint --fix -- src test"
