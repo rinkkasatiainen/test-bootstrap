@@ -9,6 +9,7 @@ import {Category} from '../../src/entities/category'
 import {Money} from '../../src/entities/money'
 import {Spending} from '../../src/entities/spending'
 import {EmailApi} from '../../src/api/emailApi'
+import {categorize} from "../../src/api/categorize";
 
 chai.use(sinonChai)
 
@@ -54,7 +55,6 @@ describe('Unusual Spending Acceptance Test', () => {
                 [MonthT.September]: fakePaymentsOfSeptember,
             })
 
-
             expect(paymentsApi('', Year.of(2021), october)).to.eql(fakePaymentsOfOctober)
             expect(paymentsApi('', Year.of(2021), october.previous())).to.eql(fakePaymentsOfSeptember)
         })
@@ -68,13 +68,11 @@ describe('Unusual Spending Acceptance Test', () => {
                 [MonthT.October]: fakePaymentsOfOctober,
                 [MonthT.September]: fakePaymentsOfSeptember,
             })
-            const unusualSpending: UnusualSpending = new UnusualSpendingImpl(paymentsApi, emailAPINeverCalled)
+            const unusualSpending = new UnusualSpendingImpl(paymentsApi, emailAPINeverCalled, categorize)
 
             const month: Month = Month.of(MonthT.October)
             const year = Year.of(2021)
             unusualSpending.calculate(month, year)
-
-            expect(true).to.eql(false)
         })
     })
     describe('when spending is less than 150%', () => {
@@ -84,7 +82,7 @@ describe('Unusual Spending Acceptance Test', () => {
                 [MonthT.September]: fakePaymentsOfSeptember,
             })
 
-            const unusualSpending: UnusualSpending = new UnusualSpendingImpl(paymentsApi, emailAPINeverCalled)
+            const unusualSpending = new UnusualSpendingImpl(paymentsApi, emailAPINeverCalled, categorize)
 
             const month: Month = Month.of(MonthT.October)
             const year = Year.of(2021)
@@ -101,13 +99,13 @@ describe('Unusual Spending Acceptance Test', () => {
                 [MonthT.September]: fakePaymentsOfSeptember,
             })
 
-            const unusualSpending: UnusualSpending = new UnusualSpendingImpl(paymentsApi, emailApiSpy)
+            const unusualSpending: UnusualSpending = new UnusualSpendingImpl(paymentsApi, emailApiSpy, categorize)
 
             const month: Month = Month.of(MonthT.October)
             const year = Year.of(2021)
             unusualSpending.calculate(month, year)
 
-            expect(emailApiSpy).to.have.been.calledWith('Something')
+            expect(emailApiSpy).to.have.been.calledWith('userId', 'subject', '200.0 entertainment | 100.0 restaurant')
         })
     })
 })
