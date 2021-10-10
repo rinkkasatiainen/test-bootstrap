@@ -1,5 +1,4 @@
 import chai, {expect} from 'chai'
-// import sinon, {SinonSpy, SinonStub} from 'sinon'
 import sinonChai from 'sinon-chai'
 import {Money} from '../../src/entities/money'
 import {Category} from '../../src/entities/category'
@@ -14,6 +13,17 @@ const spending: (m: Money) => { of: (type: Category) => Spending } =
     })
 
 describe('Categorize', () => {
+    describe('when category does not exist previously', () => {
+        it('when all is the same', () => {
+            const current = [spending(Money.EUR(10, 0)).of(Category.restaurant)]
+            const previous = [spending(Money.EUR(1, 0)).of(Category.entertainment)]
+
+            const result = categorize({previous, current})
+
+            expect(result.isTrue()).to.eql(false)
+        })
+
+    })
     describe('just 1 category', () => {
         it('when all is the same', () => {
             const current = [spending(Money.EUR(10, 0)).of(Category.restaurant)]
@@ -66,10 +76,14 @@ describe('Categorize', () => {
                 const result = categorize({previous, current})
 
                 expect(result.isTrue()).to.eql(false)
+            })
+            it('when there is not more than 50% increase on both - no email body', () => {
+                const result = categorize({previous, current})
+
                 expect(result.emailBody()).to.eql('')
             })
         })
-        describe('when there is no increase more thant 150%', () => {
+        describe('when there is increase more thant 150%', () => {
             beforeEach(() => {
                 previous = [
                     spending(Money.EUR(10, 10)).of(Category.restaurant),
@@ -77,10 +91,14 @@ describe('Categorize', () => {
                 ]
                 current = [...previous, ...previous]
             })
-            it('when there is not more than 50% increase on both - no email', () => {
+            it('when there is more than 50% increase on both ', () => {
                 const result = categorize({previous, current})
 
                 expect(result.isTrue()).to.eql(true)
+            })
+            it('when there is more than 50% increase on both - email', () => {
+                const result = categorize({previous, current})
+
                 expect(result.emailBody()).to.eql('20.20 restaurant | 20.0 entertainment')
             })
         })

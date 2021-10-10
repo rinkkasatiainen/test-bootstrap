@@ -9,7 +9,7 @@ import {Category} from '../../src/entities/category'
 import {Money} from '../../src/entities/money'
 import {Spending} from '../../src/entities/spending'
 import {EmailApi} from '../../src/api/emailApi'
-import {categorize} from "../../src/api/categorize";
+import {categorize} from '../../src/api/categorize'
 
 chai.use(sinonChai)
 

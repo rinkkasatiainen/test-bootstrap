@@ -2,14 +2,17 @@ import {Month} from '../entities/month'
 import {Year} from '../entities/year'
 import {PaymentsApi} from '../api/payments.api'
 import {EmailApi} from '../api/emailApi'
-import {Categorize} from "../api/categorize";
+import {Categorize} from '../api/categorize'
 
-export interface UnusualSpending{
+export interface UnusualSpending {
     calculate: (m: Month, y: Year) => void;
 }
 
-export class UnusualSpendingImpl implements UnusualSpending{
-    public constructor(private readonly paymentsApi: PaymentsApi, private readonly emailApi: EmailApi, private readonly categorize: Categorize) {
+export class UnusualSpendingImpl implements UnusualSpending {
+    public constructor(
+        private readonly paymentsApi: PaymentsApi,
+        private readonly emailApi: EmailApi,
+        private readonly categorize: Categorize) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -19,7 +22,7 @@ export class UnusualSpendingImpl implements UnusualSpending{
 
         const something = this.categorize({current, previous})
 
-        if(something.isTrue()){
+        if (something.isTrue()) {
             this.emailApi('userId', 'subject', something.emailBody())
         }
         /* noop */

@@ -8,12 +8,12 @@ type CategoryKeys = keyof typeof Category
 type CategoryForMoney = { [key in CategoryKeys]?: Money }
 
 class CategHolder {
-    constructor(private readonly categ: CategoryForMoney) {
+    private constructor(private readonly categ: CategoryForMoney) {
     }
 
     public static of(s: Spending[]): CategHolder {
         return new CategHolder(s.reduce((carry: CategoryForMoney, curr) => {
-            const amount: Money = (carry[curr.category] !== undefined) ? carry[curr.category]! : Money.None()
+            const amount: Money = carry[curr.category] || Money.None()
             carry[curr.category] = amount.plus(curr.amount)
             return carry
         }, {}))
@@ -22,16 +22,19 @@ class CategHolder {
     public isUnusualSpending(previousMonth: CategHolder): Category[] {
         const strings: Category[] = Object.keys(this.categ) as unknown as Category[]
         return strings
+            .filter(c => previousMonth.categ[c] !== undefined)
             .filter(
-                category => previousMonth.categ[category] &&
-                    this.categ[category] &&
-                    this.categ[category]!.biggerThan(previousMonth.categ[category]!.times(1.5))
+                category => {
+                    const prev: Money = previousMonth.categ[category] || Money.None()
+                    const curr: Money = this.categ[category] || Money.None()
+                    return curr.biggerThan(prev.times(1.5))
+                }
             )
     }
 
     public asString(c: Category): string {
         const categElement = this.categ[c]
-        return categElement? `${categElement.toString()} ${c.toString()}` : ''
+        return categElement ? `${categElement.toString()} ${c.toString()}` : ''
     }
 }
 
@@ -41,7 +44,7 @@ export const categorize: Categorize = ({current, previous}) => {
 
     const unusualSpending = currents.isUnusualSpending(prevx)
     const isTrue = unusualSpending.length > 0
-    const emailBody = unusualSpending.map( c => currents.asString(c) )
+    const emailBody = unusualSpending.map(c => currents.asString(c))
 
     const result: Something = {
         emailBody(): string {

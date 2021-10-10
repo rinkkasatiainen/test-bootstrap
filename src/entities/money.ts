@@ -18,7 +18,7 @@ export class Money {
         return this.eur > other.eur || this.eur === other.eur  && this.cents > other.cents
     }
 
-    public times(addend: number){
+    public times(addend: number): Money{
         const cents = this.cents * addend
         if(cents >= 100){
             return new Money( this.eur * addend + Math.floor(cents / 100), cents % 100 )

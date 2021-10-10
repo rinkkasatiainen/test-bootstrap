@@ -37,6 +37,7 @@ describe('Unusual Spending', () => {
         // paymentApiMock.onSecondCall().returns(previous)
 
         const doesNotSendEmail: Something = {
+            emailBody: () => '',
             isTrue: () => false,
         }
         // categorize
