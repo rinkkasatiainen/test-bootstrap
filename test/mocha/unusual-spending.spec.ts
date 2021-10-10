@@ -38,7 +38,7 @@ describe('Unusual Spending', () => {
 
         const doesNotSendEmail: Something = {
             emailBody: () => '',
-            isTrue: () => false,
+            isUnusualSpending: () => false,
         }
         // categorize
         categorize.returns(doesNotSendEmail)

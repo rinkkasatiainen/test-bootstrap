@@ -20,7 +20,7 @@ describe('Categorize', () => {
 
             const result = categorize({previous, current})
 
-            expect(result.isTrue()).to.eql(false)
+            expect(result.isUnusualSpending()).to.eql(false)
         })
 
     })
@@ -31,7 +31,7 @@ describe('Categorize', () => {
 
             const result = categorize({previous, current})
 
-            expect(result.isTrue()).to.eql(false)
+            expect(result.isUnusualSpending()).to.eql(false)
         })
 
         it('when one spending is 200% (exactly more)', () => {
@@ -40,7 +40,7 @@ describe('Categorize', () => {
 
             const result = categorize({previous, current})
 
-            expect(result.isTrue()).to.eql(true)
+            expect(result.isUnusualSpending()).to.eql(true)
         })
 
         it('when one spending is twice the value', () => {
@@ -52,7 +52,7 @@ describe('Categorize', () => {
 
             const result = categorize({previous, current})
 
-            expect(result.isTrue()).to.eql(true)
+            expect(result.isUnusualSpending()).to.eql(true)
         })
     })
 
@@ -75,7 +75,7 @@ describe('Categorize', () => {
             it('when there is not more than 50% increase on both - no email', () => {
                 const result = categorize({previous, current})
 
-                expect(result.isTrue()).to.eql(false)
+                expect(result.isUnusualSpending()).to.eql(false)
             })
             it('when there is not more than 50% increase on both - no email body', () => {
                 const result = categorize({previous, current})
@@ -94,7 +94,7 @@ describe('Categorize', () => {
             it('when there is more than 50% increase on both ', () => {
                 const result = categorize({previous, current})
 
-                expect(result.isTrue()).to.eql(true)
+                expect(result.isUnusualSpending()).to.eql(true)
             })
             it('when there is more than 50% increase on both - email', () => {
                 const result = categorize({previous, current})

@@ -1,5 +1,5 @@
 export interface Something {
-    isTrue(): boolean;
+    isUnusualSpending(): boolean;
 
     emailBody(): string;
 }

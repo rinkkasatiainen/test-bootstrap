@@ -50,7 +50,7 @@ export const categorize: Categorize = ({current, previous}) => {
         emailBody(): string {
             return emailBody.join(' | ')
         },
-        isTrue: () => isTrue,
+        isUnusualSpending: () => isTrue,
     }
 
     return result

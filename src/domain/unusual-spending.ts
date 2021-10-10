@@ -22,9 +22,8 @@ export class UnusualSpendingImpl implements UnusualSpending {
 
         const something = this.categorize({current, previous})
 
-        if (something.isTrue()) {
+        if (something.isUnusualSpending()) {
             this.emailApi('userId', 'subject', something.emailBody())
         }
-        /* noop */
     }
 }
