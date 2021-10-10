@@ -43,14 +43,11 @@ export const categorize: Categorize = ({current, previous}) => {
     const prevx: CategHolder = CategHolder.of(previous)
 
     const unusualSpending = currents.isUnusualSpending(prevx)
-    const isTrue = unusualSpending.length > 0
-    const emailBody = unusualSpending.map(c => currents.asString(c))
-
     const result: Something = {
         emailBody(): string {
-            return emailBody.join(' | ')
+            return unusualSpending.map(c => currents.asString(c)).join(' | ')
         },
-        isUnusualSpending: () => isTrue,
+        isUnusualSpending: () => unusualSpending.length > 0,
     }
 
     return result
