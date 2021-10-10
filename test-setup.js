@@ -1,13 +1,8 @@
-// needed for regenerator-runtime
-// import 'babel-polyfill';
-
-import chai,  {expect} from 'chai'
-// const chai = require( 'chai' )
-// const expect = chai.expect
+import chai from 'chai'
 // import sinon from 'sinon';
-// import sinonChai from 'sinon-chai';
+import sinonChai from 'sinon-chai';
 
-// chai.use(sinonChai);
+chai.use(sinonChai);
 
 /*
 ** Disable truncate for expected and actual values in assertions.
@@ -15,6 +10,3 @@ import chai,  {expect} from 'chai'
 ** printed are too big.
 */
 chai.config.truncateThreshold = 0
-
-global.expect = expect
-// global.sinon = sinon;
