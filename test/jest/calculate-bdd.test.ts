@@ -1,9 +1,9 @@
-import {calculate} from '../../src/calculate'
+import {gildedRose} from '../../src/gilded-rose'
 
 describe('It', () => {
     describe('should', () => {
         it('fail', () => {
-            expect(calculate()).toEqual(2)
+            expect(gildedRose()).toEqual(2)
         })
     })
 })
