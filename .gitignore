@@ -62,3 +62,4 @@ typings/
 .envrc
 .npmrc
 lib
+_approvals/actual.txt
