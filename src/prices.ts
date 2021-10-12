@@ -22,13 +22,13 @@ export async function createApp() {
         res.json()
     })
 
-    async function getPriceForTicket(getBasePriceFor: () => Promise<RowDataPacket[][]>, ticket: Ticket, resFunc: (r) => e.Response<any, Record<string, any>>, getHolidays: () => Promise<RowDataPacket[]>) {
+    async function getPrice(getBasePriceFor: () => Promise<RowDataPacket[][]>, ticket: Ticket, getHolidays: () => Promise<RowDataPacket[]>) {
         const newVar: RowDataPacket[][] = await getBasePriceFor()
         const result = newVar[0][0]
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         if (ticket.age < 6) {
-            resFunc({cost: 0})
+            return {cost: 0}
         } else {
             if (ticket.ticketType !== 'night') {
                 // TODO: AkS: This is a nasty hack
@@ -73,20 +73,20 @@ export async function createApp() {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 if (ticket.age < 15) {
-                    resFunc({cost: Math.ceil(result.cost * .7)})
+                    return {cost: Math.ceil(result.cost * .7)}
                 } else {
                     if (ticket.age === undefined) {
                         const cost = result.cost * (1 - reduction / 100)
-                        resFunc({cost: Math.ceil(cost)})
+                        return {cost: Math.ceil(cost)}
                     } else {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
                         if (ticket.age > 64) {
                             const cost = result.cost * .75 * (1 - reduction / 100)
-                            resFunc({cost: Math.ceil(cost)})
+                            return {cost: Math.ceil(cost)}
                         } else {
                             const cost = result.cost * (1 - reduction / 100)
-                            resFunc({cost: Math.ceil(cost)})
+                            return {cost: Math.ceil(cost)}
                         }
                     }
                 }
@@ -97,15 +97,23 @@ export async function createApp() {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     if (ticket.age > 64) {
-                        resFunc({cost: Math.ceil(result.cost * .4)})
+                        return {cost: Math.ceil(result.cost * .4)}
                     } else {
-                        resFunc(result)
+                        return result
                     }
                 } else {
-                    resFunc({cost: 0})
+                    return {cost: 0}
                 }
             }
         }
+    }
+
+    async function getPriceForTicket(getBasePriceFor: () => Promise<RowDataPacket[][]>, ticket: Ticket, resFunc: (r) => e.Response<any, Record<string, any>>, getHolidays: () => Promise<RowDataPacket[]>) {
+        let price = {}
+
+        price = await getPrice(getBasePriceFor, ticket, getHolidays);
+
+        resFunc(price)
     }
 
     // eslint-disable-next-line max-len
