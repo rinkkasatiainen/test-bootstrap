@@ -2,7 +2,17 @@ import express, {Application, Request, Response} from 'express'
 import mysql from 'mysql2/promise'
 import {RowDataPacket} from 'mysql2'
 
-interface Ticket { age: number; ticketType: string; date: string }
+interface Ticket {
+    age: number;
+    ticketType: string;
+    date: string;
+}
+
+interface Cost {
+    cost: number;
+}
+
+type Holidays = Array<{ holiday: Date }>
 
 export async function createApp() {
     const app: Application = express()
@@ -22,39 +32,22 @@ export async function createApp() {
         res.json()
     })
 
-    async function getPrice(getBasePriceFor: () => Promise<RowDataPacket[][]>, ticket: Ticket, getHolidays: () => Promise<RowDataPacket[]>) {
-        const newVar: RowDataPacket[][] = await getBasePriceFor()
-        const result = newVar[0][0]
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
+    async function getPrice(getBasePriceFor: () => Promise<Cost>, ticket: Ticket, getHolidays: () => Promise<Holidays>) {
+        const result = (await getBasePriceFor())
         if (ticket.age < 6) {
             return {cost: 0}
         } else {
             if (ticket.ticketType !== 'night') {
-                // TODO: AkS: This is a nasty hack
-                const newVar1: RowDataPacket[] = await getHolidays()
-                const holidays = newVar1[0]
+                const holidays = (await getHolidays())
 
                 let isHoliday
                 let reduction = 0
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 for (const row of holidays) {
-                    // eslint-disable-next-line max-len
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
                     const holiday = row.holiday
                     if (ticket.date) {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
                         const d = new Date(ticket.date)
-                        // eslint-disable-next-line max-len
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                         if (d.getFullYear() === holiday.getFullYear()
-                            // eslint-disable-next-line max-len
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                             && d.getMonth() === holiday.getMonth()
-                            // eslint-disable-next-line max-len
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                             && d.getDate() === holiday.getDate()) {
 
                             isHoliday = true
@@ -63,15 +56,11 @@ export async function createApp() {
 
                 }
 
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 if (!isHoliday && new Date(ticket.date).getDay() === 1) {
                     reduction = 35
                 }
 
                 // TODO apply reduction for others
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 if (ticket.age < 15) {
                     return {cost: Math.ceil(result.cost * .7)}
                 } else {
@@ -79,8 +68,6 @@ export async function createApp() {
                         const cost = result.cost * (1 - reduction / 100)
                         return {cost: Math.ceil(cost)}
                     } else {
-                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                        // @ts-ignore
                         if (ticket.age > 64) {
                             const cost = result.cost * .75 * (1 - reduction / 100)
                             return {cost: Math.ceil(cost)}
@@ -91,11 +78,7 @@ export async function createApp() {
                     }
                 }
             } else {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 if (ticket.age >= 6) {
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                    // @ts-ignore
                     if (ticket.age > 64) {
                         return {cost: Math.ceil(result.cost * .4)}
                     } else {
@@ -111,14 +94,13 @@ export async function createApp() {
     // eslint-disable-next-line max-len
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     app.get('/prices', async (req: Request, res: Response) => {
-        // TODO: AkS: This is a nasty hack.
-        const getHolidays = async () => await connection.query(
+        const getHolidays = async () => (await connection.query(
             'SELECT * FROM `holidays`'
-        ) as RowDataPacket[]
-        const getBasePriceFor = async () => await connection.query(
+        ) as RowDataPacket[][] ) [0] as Holidays
+        const getBasePriceFor = async () => (await connection.query(
             'SELECT cost FROM `base_price` ' +
             'WHERE `type` = ? ',
-            [req.query.type]) as RowDataPacket[][]
+            [req.query.type]) as RowDataPacket[][])[0][0] as Promise<Cost>
 
         if (!(!!req.query.age && !!req.query.type && !!req.query.date)) {
             res.json({})
