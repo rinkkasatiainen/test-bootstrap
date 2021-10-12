@@ -108,14 +108,6 @@ export async function createApp() {
         }
     }
 
-    async function getPriceForTicket(getBasePriceFor: () => Promise<RowDataPacket[][]>, ticket: Ticket, resFunc: (r) => e.Response<any, Record<string, any>>, getHolidays: () => Promise<RowDataPacket[]>) {
-        let price = {}
-
-        price = await getPrice(getBasePriceFor, ticket, getHolidays);
-
-        resFunc(price)
-    }
-
     // eslint-disable-next-line max-len
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     app.get('/prices', async (req: Request, res: Response) => {
@@ -128,9 +120,8 @@ export async function createApp() {
             'WHERE `type` = ? ',
             [req.query.type]) as RowDataPacket[][]
 
-        const resFunc = (body: Record<string, unknown>) => res.json(body)
         if (!(!!req.query.age && !!req.query.type && !!req.query.date)) {
-            resFunc({})
+            res.json({})
             return
         }
         const ticket: Ticket = {
@@ -139,7 +130,9 @@ export async function createApp() {
             date: req.query.date as string,
         }
 
-        await getPriceForTicket(getBasePriceFor, ticket, resFunc, getHolidays)
+
+        const price = await getPrice(getBasePriceFor, ticket, getHolidays)
+        res.json(price)
     })
     return {app, connection}
 }
