@@ -2,6 +2,8 @@ import express, {Application, Request, Response} from 'express'
 import mysql from 'mysql2/promise'
 import {RowDataPacket} from 'mysql2'
 
+interface Ticket { age: number; ticketType: string; date: string }
+
 export async function createApp() {
     const app: Application = express()
 
@@ -9,7 +11,7 @@ export async function createApp() {
     const connection = await mysql.createConnection(connectionOptions)
 
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    app.put('/prices',  async (req: Request, res: Response) => {
+    app.put('/prices', async (req: Request, res: Response) => {
         const liftPassCost = req.query.cost
         const liftPassType = req.query.type
         await connection.query(
@@ -20,25 +22,17 @@ export async function createApp() {
         res.json()
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    app.get('/prices', async (req: Request, res: Response) => {
-        // TODO: AkS: This is a nasty hack.
-        const newVar: RowDataPacket[][]  = await connection.query(
-            'SELECT cost FROM `base_price` ' +
-            'WHERE `type` = ? ',
-            [req.query.type]) as RowDataPacket[][]
+    async function getPriceForTicket(getBasePriceFor: () => Promise<RowDataPacket[][]>, ticket: Ticket, resFunc: (r) => e.Response<any, Record<string, any>>, getHolidays: () => Promise<RowDataPacket[]>) {
+        const newVar: RowDataPacket[][] = await getBasePriceFor()
         const result = newVar[0][0]
-
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        if (req.query.age < 6) {
-            res.json({cost: 0})
+        if (ticket.age < 6) {
+            resFunc({cost: 0})
         } else {
-            if (req.query.type !== 'night') {
+            if (ticket.ticketType !== 'night') {
                 // TODO: AkS: This is a nasty hack
-                const newVar1: RowDataPacket[] = await connection.query(
-                    'SELECT * FROM `holidays`'
-                ) as RowDataPacket[]
+                const newVar1: RowDataPacket[] = await getHolidays()
                 const holidays = newVar1[0]
 
                 let isHoliday
@@ -49,18 +43,18 @@ export async function createApp() {
                     // eslint-disable-next-line max-len
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access
                     const holiday = row.holiday
-                    if (req.query.date) {
+                    if (ticket.date) {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        const d = new Date(req.query.date)
+                        const d = new Date(ticket.date)
                         // eslint-disable-next-line max-len
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                         if (d.getFullYear() === holiday.getFullYear()
-                        // eslint-disable-next-line max-len
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+                            // eslint-disable-next-line max-len
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                             && d.getMonth() === holiday.getMonth()
-                        // eslint-disable-next-line max-len
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+                            // eslint-disable-next-line max-len
+                            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                             && d.getDate() === holiday.getDate()) {
 
                             isHoliday = true
@@ -71,47 +65,73 @@ export async function createApp() {
 
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                if (!isHoliday && new Date(req.query.date).getDay() === 1) {
+                if (!isHoliday && new Date(ticket.date).getDay() === 1) {
                     reduction = 35
                 }
 
                 // TODO apply reduction for others
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                if (req.query.age < 15) {
-                    res.json({cost: Math.ceil(result.cost * .7)})
+                if (ticket.age < 15) {
+                    resFunc({cost: Math.ceil(result.cost * .7)})
                 } else {
-                    if (req.query.age === undefined) {
+                    if (ticket.age === undefined) {
                         const cost = result.cost * (1 - reduction / 100)
-                        res.json({cost: Math.ceil(cost)})
+                        resFunc({cost: Math.ceil(cost)})
                     } else {
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        if (req.query.age > 64) {
+                        if (ticket.age > 64) {
                             const cost = result.cost * .75 * (1 - reduction / 100)
-                            res.json({cost: Math.ceil(cost)})
+                            resFunc({cost: Math.ceil(cost)})
                         } else {
                             const cost = result.cost * (1 - reduction / 100)
-                            res.json({cost: Math.ceil(cost)})
+                            resFunc({cost: Math.ceil(cost)})
                         }
                     }
                 }
             } else {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                if (req.query.age >= 6) {
+                if (ticket.age >= 6) {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    if (req.query.age > 64) {
-                        res.json({cost: Math.ceil(result.cost * .4)})
+                    if (ticket.age > 64) {
+                        resFunc({cost: Math.ceil(result.cost * .4)})
                     } else {
-                        res.json(result)
+                        resFunc(result)
                     }
                 } else {
-                    res.json({cost: 0})
+                    resFunc({cost: 0})
                 }
             }
         }
+    }
+
+    // eslint-disable-next-line max-len
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    app.get('/prices', async (req: Request, res: Response) => {
+        // TODO: AkS: This is a nasty hack.
+        const getHolidays = async () => await connection.query(
+            'SELECT * FROM `holidays`'
+        ) as RowDataPacket[]
+        const getBasePriceFor = async () => await connection.query(
+            'SELECT cost FROM `base_price` ' +
+            'WHERE `type` = ? ',
+            [req.query.type]) as RowDataPacket[][]
+
+        const resFunc = (body: Record<string, unknown>) => res.json(body)
+        if (!(!!req.query.age && !!req.query.type && !!req.query.date)) {
+            resFunc({})
+            return
+        }
+        const ticket: Ticket = {
+            age: parseInt((req.query.age as string), 10),
+            ticketType: req.query.type as string,
+            date: req.query.date as string,
+        }
+
+        await getPriceForTicket(getBasePriceFor, ticket, resFunc, getHolidays)
     })
     return {app, connection}
 }
