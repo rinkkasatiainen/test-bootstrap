@@ -1,4 +1,5 @@
-import {EnvVariables, Repository, startServer} from './src/server'
+import {EnvVariables, startServer} from './src/server'
+import {Repository} from "./src/domain/repository/tweets";
 
 export {startServer} from './src/server'
 
