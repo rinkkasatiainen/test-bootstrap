@@ -5,6 +5,7 @@ import {Repository} from '../src/domain/repository/tweets'
 
 export interface TestServer {
     start: (r: Repository) => Promise<Server>;
+    on: (port: number) => { start: (r: Repository) => Promise<Server> };
 }
 
 const dummyTweet: Tweet = {
@@ -18,5 +19,8 @@ export const dummyRepository: Repository = ({
 })
 
 export const testServer: TestServer = {
-    start: (repository: Repository) => startServer({PORT: 7878})(repository),
+    start: async (repository: Repository) => await startServer({PORT: 7878})(repository),
+    on: (port) => ({
+        start: async (repository: Repository) => await startServer({PORT: port})(repository),
+    }),
 }

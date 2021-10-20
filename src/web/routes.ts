@@ -36,7 +36,7 @@ export const routes: (a: Router) => (b: Repository) => Router =
             void getTweetLikes(repository)(tweetId)
                 .then(likes => res.json({likes}))
                 .catch((error: Error & { status?: number }) => {
-                    const message: string = error.message || 'unknown error' /*?*/
+                    const message: string = error.message || 'unknown error'
                     if (error.status) {
                         res.status(error.status)
                     } else {

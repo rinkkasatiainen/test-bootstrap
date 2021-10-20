@@ -8,10 +8,10 @@ export interface EnvVariables {
     PORT: number;
 }
 
-const router: Router = Router()
 
 export const startServer: (x: EnvVariables) => (y: Repository) => Promise<Server> =
     envVars => repository => {
+        const router: Router = Router()
 
         const expressApp: Application = express()
         expressApp.use('/', routes(router)(repository))

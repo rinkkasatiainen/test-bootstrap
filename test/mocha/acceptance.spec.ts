@@ -20,20 +20,20 @@ const tweet = {
 }
 
 describe('Express Server', () => {
-    xdescribe('just work', () => {
+    describe('just work', () => {
         let app: Server
 
-        before(async () => {
+        before('start test server', async () => {
             app = await testServer.start(dummyRepository)
         })
 
-        after((done) => {
+        after('stop test server', () => new Promise(resolve => {
             app.close(() => {
                 // eslint-disable-next-line no-console
                 console.log('Http server closed.')
-                done()
+                resolve()
             })
-        })
+        }))
 
         it('run the server', (done) => {
             void request(app)
@@ -50,7 +50,7 @@ describe('Express Server', () => {
     })
 
     describe('getting Tweets', () => {
-        let app: Server
+        let appServer: Server
         let fakeRepository: ReadRepo & WriteRepo
 
         before(async () => {
@@ -65,15 +65,11 @@ describe('Express Server', () => {
                     return Promise.resolve(likes)
                 },
             })
-            app = await testServer.start(fakeRepository)
+            appServer = await testServer.start(fakeRepository)
         })
 
-        // beforeEach(() => {
-        //
-        // })
-
         after((done) => {
-            app.close(() => {
+            appServer.close(() => {
                 // eslint-disable-next-line no-console
                 console.log('Http server closed.')
                 done()
@@ -81,22 +77,22 @@ describe('Express Server', () => {
         })
 
         it('can get tweet', (done) => {
-            void request(app)
+            void request(appServer)
                 .get(`/tweet/${tweet.id}`)
                 .expect({tweet})
                 .expect(200, done)
         })
 
         it('tweet id needs to be UUID', (done) => {
-            const invalidTweetId =  'some-random-id'
-            void request(app)
+            const invalidTweetId = 'some-random-id'
+            void request(appServer)
                 .get(`/tweet/${invalidTweetId}`)
                 .expect({status: `Invalid tweet ID: ${invalidTweetId}`})
                 .expect(500, done)
         })
 
         it('can get likes for a tweet', (done) => {
-            void request(app)
+            void request(appServer)
                 .get(`/tweet/${tweet.id}/likes`)
                 .expect({likes})
                 .expect(200, done)
@@ -104,7 +100,7 @@ describe('Express Server', () => {
 
         it('return NOT FOUND, if tweet not found', (done) => {
             const notFoundId = v4().toString()
-            void request(app)
+            void request(appServer)
                 .get(`/tweet/${notFoundId}`)
                 .expect({status: `not found: ${notFoundId}`})
                 .expect(404, done)
