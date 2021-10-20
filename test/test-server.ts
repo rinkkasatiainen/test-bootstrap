@@ -8,13 +8,14 @@ export interface TestServer {
 }
 
 const dummyTweet: Tweet = {
-    dateTime: '12.03.2021', id: 'some_id', text: 'Today is my BD', userId: 'some_id',
+    dateTime: '12.03.2021', id: 'some_id', text: 'This should not be found', userId: 'some_id',
 }
 
-export const dummyRepository: Repository = {
+export const dummyRepository: Repository = ({
     store: async () => Promise.resolve(),
     read: async () => Promise.resolve(dummyTweet),
-}
+    likes: async () => Promise.resolve([]),
+})
 
 export const testServer: TestServer = {
     start: (repository: Repository) => startServer({PORT: 7878})(repository),

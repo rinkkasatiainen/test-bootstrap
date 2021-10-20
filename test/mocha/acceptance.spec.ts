@@ -3,26 +3,35 @@ import request from 'supertest'
 import {v4} from 'uuid'
 import {dummyRepository, testServer} from '../test-server'
 import {Tweet} from '../../src/domain/entities/tweet'
-import {ReadRepo, Repository} from '../../src/domain/repository/tweets'
+import {ReadRepo, Repository, WriteRepo} from '../../src/domain/repository/tweets'
 
 const mockReadRepoWith: (x: ReadRepo) => Repository =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     mockWith => ({
-        ...dummyRepository,
+        store: () => Promise.resolve(),
+        // ...dummyRepository,
         ...mockWith,
     })
 
+const likes = [v4().toString(), v4().toString()]
+const tweetIdInRepository = v4().toString()
+const tweet = {
+    dateTime: '19.10.2021 10:13', id: tweetIdInRepository, text: 'Some text', userId: 'user-id',
+}
+
 describe('Express Server', () => {
-    describe('just work', () => {
+    xdescribe('just work', () => {
         let app: Server
 
         before(async () => {
             app = await testServer.start(dummyRepository)
         })
 
-        after(() => {
+        after((done) => {
             app.close(() => {
                 // eslint-disable-next-line no-console
                 console.log('Http server closed.')
+                done()
             })
         })
 
@@ -42,27 +51,32 @@ describe('Express Server', () => {
 
     describe('getting Tweets', () => {
         let app: Server
-        let tweet: Tweet
-        let fakeRepo: Repository
+        let fakeRepository: ReadRepo & WriteRepo
 
         before(async () => {
-            tweet = {
-                dateTime: '19.10.2021 10:13', id: v4().toString(), text: 'Some text', userId: 'user-id',
-            }
-            fakeRepo = mockReadRepoWith({
-                read(): Promise<Tweet> {
-                    return Promise.resolve(tweet)
-                }
-                ,
+            fakeRepository = mockReadRepoWith({
+                read(id: string): Promise<Tweet | null> {
+                    if (id === tweetIdInRepository) {
+                        return Promise.resolve(tweet)
+                    }
+                    return Promise.resolve(null)
+                },
+                likes(): Promise<string[]> {
+                    return Promise.resolve(likes)
+                },
             })
-
-            app = await testServer.start(fakeRepo)
+            app = await testServer.start(fakeRepository)
         })
 
-        after(() => {
+        // beforeEach(() => {
+        //
+        // })
+
+        after((done) => {
             app.close(() => {
                 // eslint-disable-next-line no-console
                 console.log('Http server closed.')
+                done()
             })
         })
 
@@ -74,11 +88,26 @@ describe('Express Server', () => {
         })
 
         it('tweet id needs to be UUID', (done) => {
-            tweet.id = 'some-random-id'
+            const invalidTweetId =  'some-random-id'
             void request(app)
-                .get(`/tweet/${tweet.id}`)
-                .expect({status: `Invalid tweet ID: ${tweet.id}`})
+                .get(`/tweet/${invalidTweetId}`)
+                .expect({status: `Invalid tweet ID: ${invalidTweetId}`})
                 .expect(500, done)
+        })
+
+        it('can get likes for a tweet', (done) => {
+            void request(app)
+                .get(`/tweet/${tweet.id}/likes`)
+                .expect({likes})
+                .expect(200, done)
+        })
+
+        it('return NOT FOUND, if tweet not found', (done) => {
+            const notFoundId = v4().toString()
+            void request(app)
+                .get(`/tweet/${notFoundId}`)
+                .expect({status: `not found: ${notFoundId}`})
+                .expect(404, done)
         })
     })
 })

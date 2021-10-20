@@ -1,6 +1,6 @@
 import {Router, Request, Response} from 'express'
 import {Repository} from '../domain/repository/tweets'
-import {getTweet} from '../domain/actions/get-tweet'
+import {getTweet, getTweetLikes} from '../domain/actions/get-tweet'
 
 export const routes: (a: Router) => (b: Repository) => Router =
     router => repository => {
@@ -18,9 +18,30 @@ export const routes: (a: Router) => (b: Repository) => Router =
             const tweetId = req.params.tweetId
             void getTweet(repository)(tweetId)
                 .then(tweet => res.json({tweet}))
-                .catch((error: Error) => {
+                .catch((error: Error & {status: number}) => {
                     const message: string = error.message || 'unknown error'
-                    res.status(500)
+                    if (error.status) {
+                        res.status(error.status)
+                    } else {
+                        res.status(500)
+                    }
+                    res.json({
+                        status: message,
+                    })
+                })
+        })
+
+        router.get('/tweet/:tweetId/likes', (req: Request, res: Response) => {
+            const tweetId = req.params.tweetId
+            void getTweetLikes(repository)(tweetId)
+                .then(likes => res.json({likes}))
+                .catch((error: Error & { status?: number }) => {
+                    const message: string = error.message || 'unknown error' /*?*/
+                    if (error.status) {
+                        res.status(error.status)
+                    } else {
+                        res.status(404)
+                    }
                     res.json({
                         status: message,
                     })

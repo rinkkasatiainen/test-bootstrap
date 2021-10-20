@@ -3,6 +3,7 @@ module.exports = function() {
         files: [
             { pattern: '**/src/**/*.ts'},
             { pattern: '**/test/**/*-helpers.ts' },
+            { pattern: '**/test/test-server.ts' },
         ],
         tests: [
             {pattern: '/**/test/**/*.spec.ts' },

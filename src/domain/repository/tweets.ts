@@ -5,7 +5,8 @@ export interface WriteRepo {
 }
 
 export interface ReadRepo {
-    read: (id: string) => Promise<Tweet>;
+    read: (id: string) => Promise<Tweet | null>;
+    likes: (id: string) => Promise<string[]>;
 }
 
 export type Repository = ReadRepo & WriteRepo
