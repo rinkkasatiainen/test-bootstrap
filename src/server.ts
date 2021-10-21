@@ -4,12 +4,17 @@ import express, {Application, Router} from 'express'
 import bodyParser from 'body-parser'
 import {routes} from './web/routes'
 import {Repository} from './domain/repository/tweets'
+import {Tweeter, User, UserRepository} from "./domain/repository/users";
 
 export interface EnvVariables {
     PORT: number;
 }
 
-
+class InMemoryUserRepository implements UserRepository {
+    public findUser(userId: string): User {
+        return new Tweeter(userId)
+    }
+}
 export const startServer: (x: EnvVariables) => (y: Repository) => Promise<Server> =
     envVars => repository => {
         const router: Router = Router()
@@ -17,7 +22,7 @@ export const startServer: (x: EnvVariables) => (y: Repository) => Promise<Server
         const expressApp: Application = express()
         expressApp.use(bodyParser.json())
 
-        expressApp.use('/', routes(router)(repository))
+        expressApp.use('/', routes(router)(repository)(new InMemoryUserRepository()))
 
 
         // TODO AkS: Fix flashes!

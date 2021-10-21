@@ -9,7 +9,7 @@ export interface Tweet {
               userId: string,
               replyTo?: string,
               quote?: string,
-              mentions?: string[]) => Promise<void>): void;
+              mentions?: string[]) => Promise<void>): Promise<void>;
 
     setReplyTo(tweetId: string): void;
 }

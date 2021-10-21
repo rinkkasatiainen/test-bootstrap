@@ -1,33 +1,12 @@
-import {Router, Request, Response, NextFunction} from 'express'
+import {NextFunction, Request, Response, Router} from 'express'
 import {Repository} from '../domain/repository/tweets'
 import {getTweet, getTweetLikes} from '../domain/actions/get-tweet'
-import {Tweet, TweetImpl} from '../domain/entities/tweet'
+import {newTweet, replyTo} from '../domain/actions/reply-to'
+import {UserRepository} from '../domain/repository/users'
 
-interface User {
-    newTweet: (text: string) => Tweet;
-}
 
-interface UserRepository {
-    findUser: (userId: string) => User;
-}
-
-class Tweeter implements User {
-    public constructor(private readonly id: string) {
-    }
-
-    public newTweet(text: string): Tweet {
-        return new TweetImpl(text, 'tweet-id', this.id)
-    }
-}
-
-class InMemoryUserRepository implements UserRepository {
-    public findUser(userId: string): User {
-        return new Tweeter(userId)
-    }
-}
-
-export const routes: (a: Router) => (b: Repository) => Router =
-    router => repository => {
+export const routes: (a: Router) => (b: Repository) => (c: UserRepository) => Router =
+    router => tweetStore => userRepository => {
 
         router.get('/', (req: Request, res: Response) => {
             res.json({status: 'ok'})
@@ -40,7 +19,7 @@ export const routes: (a: Router) => (b: Repository) => Router =
 
         router.get('/tweet/:tweetId', (req: Request, res: Response) => {
             const tweetId = req.params.tweetId
-            void getTweet(repository)(tweetId)
+            void getTweet(tweetStore)(tweetId)
                 .then(tweet => res.json({tweet}))
                 .catch((error: Error & { status: number }) => {
                     const message: string = error.message || 'unknown error'
@@ -57,7 +36,7 @@ export const routes: (a: Router) => (b: Repository) => Router =
 
         router.get('/tweet/:tweetId/likes', (req: Request, res: Response) => {
             const tweetId = req.params.tweetId
-            void getTweetLikes(repository)(tweetId)
+            void getTweetLikes(tweetStore)(tweetId)
                 .then(likes => res.json({likes}))
                 .catch((error: Error & { status?: number }) => {
                     const message: string = error.message || 'unknown error'
@@ -72,53 +51,34 @@ export const routes: (a: Router) => (b: Repository) => Router =
                 })
         })
 
+        const requireBody = (req: Request, res: Response, next: NextFunction) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const body: { text?: string } = req.body || {}
+            if (body.text) {
+                next()
+                return
+            }
+            res.status(500)
+            res.json({
+                status: 'missing body',
+            })
+        };
+
         router.post('/user/:userId/tweets',
-            (req: Request, res: Response, next: NextFunction) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const body: { text?: string } = req.body || {}
-                if (body.text) {
-                    next()
-                    return
-                }
-                res.status(500)
-                res.json({
-                    status: 'missing body',
-                })
-            },
-            (req: Request, res: Response) => {
+            requireBody,
+            async (req: Request, res: Response) => {
                 const userId = req.params.userId
                 const body: { text: string } = req.body
-                const userRepository = new InMemoryUserRepository()
-                const user = userRepository.findUser(userId)
-                const tweet = user.newTweet(body.text)
-                // tweet.setMentions(body.mentions)
-                tweet.save(repository.store)
+                await newTweet(userRepository, tweetStore)(userId, body.text)
                 res.json({status: 'uuid'})
             })
+
         router.post('/tweet/:tweetId/reply/:userId',
-            (req: Request, res: Response, next: NextFunction) => {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const body: { text?: string } = req.body || {}
-                if (body.text) {
-                    next()
-                    return
-                }
-                res.status(500)
-                res.json({
-                    status: 'missing body',
-                })
-            },
-            (req: Request, res: Response) => {
+            requireBody,
+            async (req: Request, res: Response) => {
                 const {tweetId, userId} = req.params
                 const body: { text: string } = req.body
-                const userRepository = new InMemoryUserRepository()
-                const user = userRepository.findUser(userId)
-                const tweet = user.newTweet(body.text)
-                const replyToTweet = repository.read(tweetId)
-                tweet.setReplyTo(tweetId)
-                // tweet.setMentions( replyToTweet )
-                // tweet.setMentions(body.mentions)
-                tweet.save(repository.store)
+                await replyTo(userRepository, tweetStore)(userId, body.text, tweetId)
                 res.json({status: 'uuid'})
             })
 
