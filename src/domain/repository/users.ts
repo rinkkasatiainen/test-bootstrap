@@ -13,6 +13,6 @@ export class Tweeter implements User {
     }
 
     public newTweet(text: string): Tweet {
-        return new TweetImpl(text, 'tweet-id', this.id)
+        return new TweetImpl(text, 'uuid', this.id)
     }
 }

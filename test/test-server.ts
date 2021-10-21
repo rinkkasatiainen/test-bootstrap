@@ -1,6 +1,6 @@
 import {Server} from 'http'
 import {startServer} from '../src/server'
-import {Tweet} from '../src/domain/entities/tweet'
+import {Tweet, TweetImpl} from '../src/domain/entities/tweet'
 import {Repository} from '../src/domain/repository/tweets'
 
 export interface TestServer {
@@ -21,9 +21,9 @@ const createRepostitory: () => Repository = () => {
             return Promise.resolve(null)
         },
 
-        store: (text: string, userId: string, replyTo?: string, quote?: string, mentions?: string[]) => {
-            const t: Tweet = {dateTime: 'now', id: 'define', text, userId}
-            tweets[t.id] = t
+        store: (tweetId, text, userId, replyTo?: string, quote?: string, mentions?: string[]) => {
+            const tweet: Tweet = new TweetImpl(text, tweetId, userId)
+            tweets[tweetId] = tweet
             return Promise.resolve()
         },
     }

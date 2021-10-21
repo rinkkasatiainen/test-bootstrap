@@ -1,7 +1,13 @@
 import {Tweet} from '../entities/tweet'
 
 export interface WriteRepo {
-    store: (text: string, userId: string, replyTo?: string, quote?: string, mentions?: string[]) => Promise<void>;
+    store: (
+        tweetId: string,
+        text: string,
+        userId: string,
+        replyTo?: string,
+        quote?: string,
+        mentions?: string[]) => Promise<void>;
 }
 
 export interface ReadRepo {

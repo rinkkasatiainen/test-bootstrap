@@ -5,7 +5,7 @@ import sinon, {SinonStub} from 'sinon'
 import chai, {expect} from 'chai'
 import sinonChai from 'sinon-chai'
 import {dummyRepository, testServer} from '../test-server'
-import {Tweet} from '../../src/domain/entities/tweet'
+import {Tweet, TweetImpl} from '../../src/domain/entities/tweet'
 import {ReadRepo, Repository, WriteRepo} from '../../src/domain/repository/tweets'
 
 chai.use(sinonChai)
@@ -28,9 +28,7 @@ const mockReadRepoWith: (x: ReadRepo) => Repository =
 
 const likes = [v4().toString(), v4().toString()]
 const tweetIdInRepository = v4().toString()
-const tweet = {
-    dateTime: '19.10.2021 10:13', id: tweetIdInRepository, text: 'Some text', userId: 'user-id',
-}
+const tweet = new TweetImpl('Some text', tweetIdInRepository, 'user-id')
 
 describe('Express Server', () => {
     describe('just work', () => {
@@ -90,9 +88,13 @@ describe('Express Server', () => {
         })
 
         it('can get tweet', (done) => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            const {text, id, userId} = tweet
+            const expected = {text, id, userId}
             void request(appServer)
-                .get(`/tweet/${tweet.id}`)
-                .expect({tweet})
+                .get(`/tweet/${tweetIdInRepository}`)
+                .expect({tweet: expected})
                 .expect(200, done)
         })
 
@@ -106,7 +108,7 @@ describe('Express Server', () => {
 
         it('can get likes for a tweet', (done) => {
             void request(appServer)
-                .get(`/tweet/${tweet.id}/likes`)
+                .get(`/tweet/${tweetIdInRepository}/likes`)
                 .expect({likes})
                 .expect(200, done)
         })
@@ -147,27 +149,27 @@ describe('Express Server', () => {
 
         it('returns post id', async () => {
             await request(appServer)
-                .post('/user/some-user-id/tweets' )
+                .post('/user/some-user-id/tweets')
                 .send({text: 'some text'})
                 .expect(200)
                 .expect({status: 'uuid'})
-            expect(storeStub).to.have.been.calledWith('some text', 'some-user-id')
+            expect(storeStub).to.have.been.calledWith('uuid', 'some text', 'some-user-id')
         })
 
         it('requires body', async () => {
             await request(appServer)
-                .post('/user/some-user-id/tweets' )
+                .post('/user/some-user-id/tweets')
                 .expect(500)
                 .expect({status: 'missing body'})
         })
 
-        it('can add replyto',  async() => {
+        it('can add replyto', async () => {
             await request(appServer)
-                .post('/tweet/tweet-id/reply/some-user-id' )
+                .post('/tweet/tweet-id/reply/some-user-id')
                 .send({text: 'some reply'})
                 .expect(200)
                 .expect({status: 'uuid'})
-            expect(storeStub).to.have.been.calledWith('some reply', 'some-user-id', 'tweet-id')
+            expect(storeStub).to.have.been.calledWith('uuid', 'some reply', 'some-user-id', 'tweet-id')
         })
     })
 })

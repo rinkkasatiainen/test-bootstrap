@@ -15,7 +15,7 @@ export const newTweet:
 
 export const replyTo:
     (userRepository: UserRepository, tweerRepository: Repository) =>
-        (userId: string, text: string, tweetId: string) => Promise<void> =
+        (userId: string, text: string, replyToId: string) => Promise<void> =
     (userRepository, tweetStore) => async (userId, text, tweetId) => {
         const user = await userRepository.findUser(userId)
         const tweet = user.newTweet(text)

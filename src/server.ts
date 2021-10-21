@@ -11,8 +11,8 @@ export interface EnvVariables {
 }
 
 class InMemoryUserRepository implements UserRepository {
-    public findUser(userId: string): User {
-        return new Tweeter(userId)
+    public findUser(userId: string): Promise<User> {
+        return Promise.resolve(new Tweeter(userId))
     }
 }
 export const startServer: (x: EnvVariables) => (y: Repository) => Promise<Server> =
