@@ -8,15 +8,30 @@ export interface TestServer {
     on: (port: number) => { start: (r: Repository) => Promise<Server> };
 }
 
-const dummyTweet: Tweet = {
-    dateTime: '12.03.2021', id: 'some_id', text: 'This should not be found', userId: 'some_id',
+const createRepostitory: () => Repository = () => {
+    const tweets: Record<string, Tweet> = {}
+
+    const newVar: Repository = {
+        likes(id: string): Promise<string[]> {
+            return Promise.resolve([])
+        }, read(id: string): Promise<Tweet | null> {
+            if (tweets[id]) {
+                return Promise.resolve(tweets[id])
+            }
+            return Promise.resolve(null)
+        },
+
+        store: (text: string, userId: string, replyTo?: string, quote?: string, mentions?: string[]) => {
+            const t: Tweet = {dateTime: 'now', id: 'define', text, userId}
+            tweets[t.id] = t
+            return Promise.resolve()
+        },
+    }
+    return newVar
+
 }
 
-export const dummyRepository: Repository = ({
-    store: async () => Promise.resolve(),
-    read: async () => Promise.resolve(dummyTweet),
-    likes: async () => Promise.resolve([]),
-})
+export const dummyRepository: Repository = createRepostitory()
 
 export const testServer: TestServer = {
     start: async (repository: Repository) => await startServer({PORT: 7878})(repository),

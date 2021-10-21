@@ -1,9 +1,22 @@
 import {Server} from 'http'
 import request from 'supertest'
 import {v4} from 'uuid'
+import sinon, {SinonStub} from 'sinon'
+import chai, {expect} from 'chai'
+import sinonChai from 'sinon-chai'
 import {dummyRepository, testServer} from '../test-server'
 import {Tweet} from '../../src/domain/entities/tweet'
 import {ReadRepo, Repository, WriteRepo} from '../../src/domain/repository/tweets'
+
+chai.use(sinonChai)
+
+const mockWriteRepoWith: (x: WriteRepo) => Repository =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    mockWith => ({
+        ...dummyRepository,
+        ...mockWith,
+    })
+
 
 const mockReadRepoWith: (x: ReadRepo) => Repository =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -104,6 +117,38 @@ describe('Express Server', () => {
                 .get(`/tweet/${notFoundId}`)
                 .expect({status: `not found: ${notFoundId}`})
                 .expect(404, done)
+        })
+    })
+
+    describe('posting tweets', () => {
+        let appServer: Server
+        let fakeRepository: ReadRepo & WriteRepo
+        let storeStub: SinonStub
+
+        before(async () => {
+            storeStub = sinon.stub()
+            fakeRepository = mockWriteRepoWith({
+                store: storeStub,
+            })
+            appServer = await testServer.start(fakeRepository)
+        })
+
+        after((done) => {
+            appServer.close(() => {
+                // eslint-disable-next-line no-console
+                console.log('Http server closed.')
+                done()
+            })
+        })
+
+        it('returns post id', async () => {
+            await request(appServer)
+                .post('/user/some-user-id/tweets' )
+                .set('Accept', 'application/json')
+                .send({text: 'some text'})
+                .expect(200)
+                .expect({status: 'uuid'})
+            expect(storeStub).to.have.been.called
         })
     })
 })

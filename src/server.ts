@@ -1,6 +1,7 @@
 import {Server} from 'http'
 import {AddressInfo} from 'net'
 import express, {Application, Router} from 'express'
+import bodyParser from 'body-parser'
 import {routes} from './web/routes'
 import {Repository} from './domain/repository/tweets'
 
@@ -14,7 +15,10 @@ export const startServer: (x: EnvVariables) => (y: Repository) => Promise<Server
         const router: Router = Router()
 
         const expressApp: Application = express()
+        expressApp.use(bodyParser.json())
+
         expressApp.use('/', routes(router)(repository))
+
 
         // TODO AkS: Fix flashes!
         const port = envVars.PORT || 7778
