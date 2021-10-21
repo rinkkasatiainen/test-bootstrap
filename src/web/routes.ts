@@ -4,9 +4,22 @@ import {getTweet, getTweetLikes} from '../domain/actions/get-tweet'
 import {newTweet, replyTo} from '../domain/actions/reply-to'
 import {UserRepository} from '../domain/repository/users'
 
+const requireBody = (req: Request, res: Response, next: NextFunction) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const body: { text?: string } = req.body || {}
+    if (body.text) {
+        next()
+        return
+    }
+    res.status(500)
+    res.json({
+        status: 'missing body',
+    })
+}
 
 export const routes: (a: Router) => (b: Repository) => (c: UserRepository) => Router =
     router => tweetStore => userRepository => {
+
 
         router.get('/', (req: Request, res: Response) => {
             res.json({status: 'ok'})
@@ -51,19 +64,6 @@ export const routes: (a: Router) => (b: Repository) => (c: UserRepository) => Ro
                 })
         })
 
-        const requireBody = (req: Request, res: Response, next: NextFunction) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const body: { text?: string } = req.body || {}
-            if (body.text) {
-                next()
-                return
-            }
-            res.status(500)
-            res.json({
-                status: 'missing body',
-            })
-        };
-
         router.post('/user/:userId/tweets',
             requireBody,
             async (req: Request, res: Response) => {
@@ -78,8 +78,19 @@ export const routes: (a: Router) => (b: Repository) => (c: UserRepository) => Ro
             async (req: Request, res: Response) => {
                 const {tweetId, userId} = req.params
                 const body: { text: string } = req.body
-                await replyTo(userRepository, tweetStore)(userId, body.text, tweetId)
-                res.json({status: 'uuid'})
+                void replyTo(userRepository, tweetStore)(userId, body.text, tweetId)
+                    .then(() => res.json({status: 'uuid'}))
+                    .catch((error: Error & { status?: number }) => {
+                        const message: string = error.message || 'unknown error'
+                        if (error.status) {
+                            res.status(error.status)
+                        } else {
+                            res.status(404)
+                        }
+                        res.json({
+                            status: message,
+                        })
+                    })
             })
 
         return router

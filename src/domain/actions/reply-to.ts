@@ -19,7 +19,10 @@ export const replyTo:
     (userRepository, tweetStore) => async (userId, text, tweetId) => {
         const user = await userRepository.findUser(userId)
         const tweet = user.newTweet(text)
-        // const replyToTweet = await tweetStore.read(tweetId)
+        const replyToTweet = await tweetStore.read(tweetId)
+        if( replyToTweet === null) {
+            return Promise.reject({status: 404, message: `not found: ${tweetId}`})
+        }
         tweet.setReplyTo(tweetId)
         // tweet.setMentions( replyToTweet )
         // tweet.setMentions(body.mentions)

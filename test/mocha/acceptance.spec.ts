@@ -10,7 +10,7 @@ import {ReadRepo, Repository, WriteRepo} from '../../src/domain/repository/tweet
 
 chai.use(sinonChai)
 
-const mockWriteRepoWith: (x: WriteRepo) => Repository =
+const mockWriteRepoWith: (x: WriteRepo | ReadRepo) => Repository =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     mockWith => ({
         ...dummyRepository,
@@ -131,6 +131,12 @@ describe('Express Server', () => {
             storeStub = sinon.stub()
             fakeRepository = mockWriteRepoWith({
                 store: storeStub,
+                read(id: string): Promise<Tweet | null> {
+                    if (id === tweetIdInRepository) {
+                        return Promise.resolve(tweet)
+                    }
+                    return Promise.resolve(null)
+                },
             })
             appServer = await testServer.start(fakeRepository)
         })
@@ -163,13 +169,26 @@ describe('Express Server', () => {
                 .expect({status: 'missing body'})
         })
 
-        it('can add replyto', async () => {
-            await request(appServer)
-                .post('/tweet/tweet-id/reply/some-user-id')
-                .send({text: 'some reply'})
-                .expect(200)
-                .expect({status: 'uuid'})
-            expect(storeStub).to.have.been.calledWith('uuid', 'some reply', 'some-user-id', 'tweet-id')
+        describe('can reply to', () => {
+            it('stores it in DB', async () => {
+                const userId = 'some-user-id'
+                await request(appServer)
+                    .post(`/tweet/${tweetIdInRepository}/reply/${userId}`)
+                    .send({text: 'some reply'})
+                    .expect(200)
+                    .expect({status: 'uuid'})
+                expect(storeStub).to.have.been.calledWith('uuid', 'some reply', userId, tweetIdInRepository)
+            })
+            it('only on valid tweet id', async () => {
+                const userId = 'some-user-id'
+                const nonExistingTweet = v4().toString()
+                await request(appServer)
+                    .post(`/tweet/${nonExistingTweet}/reply/${userId}`)
+                    .send({text: 'some reply'})
+                    .expect(404)
+                    .expect({status: `not found: ${nonExistingTweet}`})
+                expect(storeStub).to.not.have.been.called
+            })
         })
     })
 })
