@@ -74,7 +74,9 @@ export const routes: (a: Router) => (b: Repository) => Router =
 
         router.post('/user/:userId/tweets',
             (req: Request, res: Response, next: NextFunction) => {
-                if (req.body) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const body: { text?: string } = req.body || {}
+                if (body.text) {
                     next()
                     return
                 }
@@ -85,10 +87,36 @@ export const routes: (a: Router) => (b: Repository) => Router =
             },
             (req: Request, res: Response) => {
                 const userId = req.params.userId
-                const body: { text: string } = req.body || {text: 'foo'}
+                const body: { text: string } = req.body
                 const userRepository = new InMemoryUserRepository()
                 const user = userRepository.findUser(userId)
                 const tweet = user.newTweet(body.text)
+                // tweet.setMentions(body.mentions)
+                tweet.save(repository.store)
+                res.json({status: 'uuid'})
+            })
+        router.post('/tweet/:tweetId/reply/:userId',
+            (req: Request, res: Response, next: NextFunction) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const body: { text?: string } = req.body || {}
+                if (body.text) {
+                    next()
+                    return
+                }
+                res.status(500)
+                res.json({
+                    status: 'missing body',
+                })
+            },
+            (req: Request, res: Response) => {
+                const {tweetId, userId} = req.params
+                const body: { text: string } = req.body
+                const userRepository = new InMemoryUserRepository()
+                const user = userRepository.findUser(userId)
+                const tweet = user.newTweet(body.text)
+                const replyToTweet = repository.read(tweetId)
+                tweet.setReplyTo(tweetId)
+                // tweet.setMentions( replyToTweet )
                 // tweet.setMentions(body.mentions)
                 tweet.save(repository.store)
                 res.json({status: 'uuid'})

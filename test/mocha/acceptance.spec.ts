@@ -133,6 +133,10 @@ describe('Express Server', () => {
             appServer = await testServer.start(fakeRepository)
         })
 
+        afterEach(() => {
+            storeStub.reset()
+        })
+
         after((done) => {
             appServer.close(() => {
                 // eslint-disable-next-line no-console
@@ -144,11 +148,26 @@ describe('Express Server', () => {
         it('returns post id', async () => {
             await request(appServer)
                 .post('/user/some-user-id/tweets' )
-                .set('Accept', 'application/json')
                 .send({text: 'some text'})
                 .expect(200)
                 .expect({status: 'uuid'})
-            expect(storeStub).to.have.been.called
+            expect(storeStub).to.have.been.calledWith('some text', 'some-user-id')
+        })
+
+        it('requires body', async () => {
+            await request(appServer)
+                .post('/user/some-user-id/tweets' )
+                .expect(500)
+                .expect({status: 'missing body'})
+        })
+
+        it('can add replyto',  async() => {
+            await request(appServer)
+                .post('/tweet/tweet-id/reply/some-user-id' )
+                .send({text: 'some reply'})
+                .expect(200)
+                .expect({status: 'uuid'})
+            expect(storeStub).to.have.been.calledWith('some reply', 'some-user-id', 'tweet-id')
         })
     })
 })
