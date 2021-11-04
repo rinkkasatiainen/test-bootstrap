@@ -1,69 +1,137 @@
-export class Item {
-    public name: string;
-    public sellIn: number;
-    public quality: number;
+interface Item {
+    name: string;
+    sellIn: number;
+    quality: number;
 
-    public constructor(name: string, sellIn: number, quality: number) {
-        this.name = name
-        this.sellIn = sellIn
-        this.quality = quality
+    updateQuality(): void;
+}
+
+export class ItemImpl implements Item {
+    public constructor(public name: string, public sellIn: number, public quality: number) {
+    }
+
+    public updateQuality(): void {
+        throw new Error('should not occur')
     }
 }
 
 export class GildedRose {
-    private items: Item[];
+    public items: Item[]
 
     public constructor(items = [] as Item[]) {
         this.items = items
     }
 
     public updateQuality() {
-        for (let i = 0; i < this.items.length; i++) {
-            if (this.items[i].name !== 'Aged Brie' && this.items[i].name !== 'Backstage passes to a TAFKAL80ETC concert') {
-                if (this.items[i].quality > 0) {
-                    if (this.items[i].name !== 'Sulfuras, Hand of Ragnaros') {
-                        this.items[i].quality = this.items[i].quality - 1
-                    }
-                }
-            } else {
-                if (this.items[i].quality < 50) {
-                    this.items[i].quality = this.items[i].quality + 1
-                    if (this.items[i].name === 'Backstage passes to a TAFKAL80ETC concert') {
-                        if (this.items[i].sellIn < 11) {
-                            if (this.items[i].quality < 50) {
-                                this.items[i].quality = this.items[i].quality + 1
-                            }
-                        }
-                        if (this.items[i].sellIn < 6) {
-                            if (this.items[i].quality < 50) {
-                                this.items[i].quality = this.items[i].quality + 1
-                            }
-                        }
-                    }
+        const result = []
+
+        for (const item of this.items) {
+            let updatedItem = createItem(item)
+            updatedItem.updateQuality()
+
+
+            result.push(updatedItem)
+
+        }
+        this.items = result
+        return result
+    }
+}
+
+
+class AgedBrie implements Item {
+    public constructor(public readonly name: string, public quality: number, public sellIn: number) {
+    }
+
+    public updateQuality(): Item {
+        if (this.quality < 50) {
+            this.quality = this.quality + 1
+        }
+        this.sellIn = this.sellIn - 1
+        if (this.sellIn < 0) {
+            if (this.quality < 50) {
+                this.quality = this.quality + 1
+            }
+        }
+        return this
+    }
+
+    public static build(name: string, quality: number, sellIn: number): Item {
+        return new AgedBrie(name, quality, sellIn)
+    }
+}
+
+class BackstagePasses implements Item {
+    public constructor(public readonly name: string, public quality: number, public sellIn: number) {
+    }
+
+    public updateQuality(): Item {
+        if (this.quality < 50) {
+            this.quality = this.quality + 1
+            if (this.sellIn < 11) {
+                if (this.quality < 50) {
+                    this.quality = this.quality + 1
                 }
             }
-            if (this.items[i].name !== 'Sulfuras, Hand of Ragnaros') {
-                this.items[i].sellIn = this.items[i].sellIn - 1
-            }
-            if (this.items[i].sellIn < 0) {
-                if (this.items[i].name !== 'Aged Brie') {
-                    if (this.items[i].name !== 'Backstage passes to a TAFKAL80ETC concert') {
-                        if (this.items[i].quality > 0) {
-                            if (this.items[i].name !== 'Sulfuras, Hand of Ragnaros') {
-                                this.items[i].quality = this.items[i].quality - 1
-                            }
-                        }
-                    } else {
-                        this.items[i].quality = this.items[i].quality - this.items[i].quality
-                    }
-                } else {
-                    if (this.items[i].quality < 50) {
-                        this.items[i].quality = this.items[i].quality + 1
-                    }
+            if (this.sellIn < 6) {
+                if (this.quality < 50) {
+                    this.quality = this.quality + 1
                 }
             }
         }
+        this.sellIn = this.sellIn - 1
+        if (this.sellIn < 0) {
+            this.quality = this.quality - this.quality
+        }
+        return this
+    }
 
-        return this.items
+    public static build(name: string, quality: number, sellIn: number): Item {
+        return new BackstagePasses(name, quality, sellIn)
+    }
+}
+
+class SulfurasHandOfRagnaros implements Item {
+    public constructor(public readonly name: string, public quality: number, public sellIn: number) {
+    }
+
+    public updateQuality(): Item {
+        return this
+    }
+
+    public static build(name: string, quality: number, sellIn: number): Item {
+        return new SulfurasHandOfRagnaros(name, quality, sellIn)
+    }
+}
+
+class NormalItem implements Item {
+    public constructor(public readonly name: string, public quality: number, public sellIn: number) {
+    }
+
+    public updateQuality(): Item {
+        if (this.quality > 0) {
+            this.quality = this.quality - 1
+        }
+        this.sellIn = this.sellIn - 1
+        if (this.sellIn < 0) {
+            if (this.quality > 0) {
+                this.quality = this.quality - 1
+            }
+        }
+        return this
+    }
+}
+
+const itemByName: {[key: string]: (a: string, b: number, c: number) => Item } = {
+    'Aged Brie': AgedBrie.build,
+    'Backstage passes to a TAFKAL80ETC concert': BackstagePasses.build,
+    'Sulfuras, Hand of Ragnaros': SulfurasHandOfRagnaros.build,
+}
+
+function createItem(item: Item) {
+    if (item.name in itemByName) {
+        return itemByName[item.name](item.name, item.quality, item.sellIn)
+    } else {
+        return new NormalItem(item.name, item.quality, item.sellIn)
     }
 }
