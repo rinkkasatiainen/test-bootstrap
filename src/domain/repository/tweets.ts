@@ -1,4 +1,4 @@
-import {Tweet} from '../entities/tweet'
+import {Post} from '../entities/post'
 
 export interface WriteRepo {
     store: (
@@ -11,8 +11,8 @@ export interface WriteRepo {
 }
 
 export interface ReadRepo {
-    read: (id: string) => Promise<Tweet | null>;
+    read: (id: string) => Promise<Post | null>;
     likes: (id: string) => Promise<string[]>;
 }
 
-export type Repository = ReadRepo & WriteRepo
+export type PostRepository = ReadRepo & WriteRepo

@@ -1,7 +1,7 @@
-import {Tweet, TweetImpl} from '../entities/tweet'
+import {Post, PostImpl} from '../entities/post'
 
 export interface User {
-    newTweet: (text: string) => Tweet;
+    newTweet: (text: string) => Post;
 }
 
 export interface UserRepository {
@@ -12,7 +12,7 @@ export class Tweeter implements User {
     public constructor(private readonly id: string) {
     }
 
-    public newTweet(text: string): Tweet {
-        return new TweetImpl(text, 'uuid', this.id)
+    public newTweet(text: string): Post {
+        return new PostImpl(text, 'uuid', this.id)
     }
 }

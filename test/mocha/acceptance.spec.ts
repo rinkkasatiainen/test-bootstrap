@@ -5,12 +5,12 @@ import sinon, {SinonStub} from 'sinon'
 import chai, {expect} from 'chai'
 import sinonChai from 'sinon-chai'
 import {dummyRepository, testServer} from '../test-server'
-import {Tweet, TweetImpl} from '../../src/domain/entities/tweet'
-import {ReadRepo, Repository, WriteRepo} from '../../src/domain/repository/tweets'
+import {Post, PostImpl} from '../../src/domain/entities/post'
+import {ReadRepo, PostRepository, WriteRepo} from '../../src/domain/repository/tweets'
 
 chai.use(sinonChai)
 
-const mockWriteRepoWith: (x: WriteRepo | ReadRepo) => Repository =
+const mockWriteRepoWith: (x: WriteRepo | ReadRepo) => PostRepository =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     mockWith => ({
         ...dummyRepository,
@@ -18,7 +18,7 @@ const mockWriteRepoWith: (x: WriteRepo | ReadRepo) => Repository =
     })
 
 
-const mockReadRepoWith: (x: ReadRepo) => Repository =
+const mockReadRepoWith: (x: ReadRepo) => PostRepository =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     mockWith => ({
         store: () => Promise.resolve(),
@@ -27,8 +27,8 @@ const mockReadRepoWith: (x: ReadRepo) => Repository =
     })
 
 const likes = [v4().toString(), v4().toString()]
-const tweetIdInRepository = v4().toString()
-const tweet = new TweetImpl('Some text', tweetIdInRepository, 'user-id')
+const idInRepository = v4().toString()
+const post = new PostImpl('Some text', idInRepository, 'user-id')
 
 describe('Express Server', () => {
     describe('just work', () => {
@@ -60,15 +60,15 @@ describe('Express Server', () => {
         })
     })
 
-    describe('getting Tweets', () => {
+    describe('getting Posts', () => {
         let appServer: Server
         let fakeRepository: ReadRepo & WriteRepo
 
         before(async () => {
             fakeRepository = mockReadRepoWith({
-                read(id: string): Promise<Tweet | null> {
-                    if (id === tweetIdInRepository) {
-                        return Promise.resolve(tweet)
+                read(id: string): Promise<Post | null> {
+                    if (id === idInRepository) {
+                        return Promise.resolve(post)
                     }
                     return Promise.resolve(null)
                 },
@@ -87,53 +87,53 @@ describe('Express Server', () => {
             })
         })
 
-        it('can get tweet', (done) => {
+        it('can get post', (done) => {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            const {text, id, userId} = tweet
+            const {text, id, userId} = post
             const expected = {text, id, userId}
             void request(appServer)
-                .get(`/tweet/${tweetIdInRepository}`)
-                .expect({tweet: expected})
+                .get(`/post/${idInRepository}`)
+                .expect({post: expected})
                 .expect(200, done)
         })
 
-        it('tweet id needs to be UUID', (done) => {
-            const invalidTweetId = 'some-random-id'
+        it('post id needs to be UUID', (done) => {
+            const invalidId = 'some-random-id'
             void request(appServer)
-                .get(`/tweet/${invalidTweetId}`)
-                .expect({status: `Invalid tweet ID: ${invalidTweetId}`})
+                .get(`/post/${invalidId}`)
+                .expect({status: `Invalid post ID: ${invalidId}`})
                 .expect(500, done)
         })
 
-        it('can get likes for a tweet', (done) => {
+        it('can get likes for a post', (done) => {
             void request(appServer)
-                .get(`/tweet/${tweetIdInRepository}/likes`)
+                .get(`/post/${idInRepository}/likes`)
                 .expect({likes})
                 .expect(200, done)
         })
 
-        it('return NOT FOUND, if tweet not found', (done) => {
+        it('return NOT FOUND, if post not found', (done) => {
             const notFoundId = v4().toString()
             void request(appServer)
-                .get(`/tweet/${notFoundId}`)
+                .get(`/post/${notFoundId}`)
                 .expect({status: `not found: ${notFoundId}`})
                 .expect(404, done)
         })
     })
 
-    describe('posting tweets', () => {
+    describe('posting posts', () => {
         let appServer: Server
-        let fakeRepository: ReadRepo & WriteRepo
+        let fakeRepository: PostRepository
         let storeStub: SinonStub
 
         before(async () => {
             storeStub = sinon.stub()
             fakeRepository = mockWriteRepoWith({
                 store: storeStub,
-                read(id: string): Promise<Tweet | null> {
-                    if (id === tweetIdInRepository) {
-                        return Promise.resolve(tweet)
+                read(id: string): Promise<Post | null> {
+                    if (id === idInRepository) {
+                        return Promise.resolve(post)
                     }
                     return Promise.resolve(null)
                 },
@@ -173,20 +173,20 @@ describe('Express Server', () => {
             it('stores it in DB', async () => {
                 const userId = 'some-user-id'
                 await request(appServer)
-                    .post(`/tweet/${tweetIdInRepository}/reply/${userId}`)
+                    .post(`/post/${idInRepository}/reply/${userId}`)
                     .send({text: 'some reply'})
                     .expect(200)
                     .expect({status: 'uuid'})
-                expect(storeStub).to.have.been.calledWith('uuid', 'some reply', userId, tweetIdInRepository)
+                expect(storeStub).to.have.been.calledWith('uuid', 'some reply', userId, idInRepository)
             })
-            it('only on valid tweet id', async () => {
+            it('only on valid post id', async () => {
                 const userId = 'some-user-id'
-                const nonExistingTweet = v4().toString()
+                const nonExistingId = v4().toString()
                 await request(appServer)
-                    .post(`/tweet/${nonExistingTweet}/reply/${userId}`)
+                    .post(`/post/${nonExistingId}/reply/${userId}`)
                     .send({text: 'some reply'})
                     .expect(404)
-                    .expect({status: `not found: ${nonExistingTweet}`})
+                    .expect({status: `not found: ${nonExistingId}`})
                 expect(storeStub).to.not.have.been.called
             })
         })

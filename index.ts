@@ -1,17 +1,17 @@
 import {EnvVariables, startServer} from './src/server'
-import {Repository} from './src/domain/repository/tweets'
-import {Tweet, TweetImpl} from './src/domain/entities/tweet'
+import {PostRepository} from './src/domain/repository/tweets'
+import {Post, PostImpl} from './src/domain/entities/post'
 
 export {startServer} from './src/server'
 
 
-const createRepostitory: () => Repository = () => {
-    const tweets: Record<string, Tweet> = {}
+const createRepostitory: () => PostRepository = () => {
+    const tweets: Record<string, Post> = {}
 
-    const newVar: Repository = {
+    const newVar: PostRepository = {
         likes(id: string): Promise<string[]> {
             return Promise.resolve([])
-        }, read(id: string): Promise<Tweet | null> {
+        }, read(id: string): Promise<Post | null> {
             if (tweets[id]) {
                 return Promise.resolve(tweets[id])
             }
@@ -19,7 +19,7 @@ const createRepostitory: () => Repository = () => {
         },
 
         store: (tweetId, text, userId, replyTo?: string, quote?: string, mentions?: string[]) => {
-            const tweet: Tweet = new TweetImpl(text, tweetId, userId)
+            const tweet: Post = new PostImpl(text, tweetId, userId)
             tweets[tweetId] = tweet
             return Promise.resolve()
         },
@@ -28,7 +28,7 @@ const createRepostitory: () => Repository = () => {
 
 }
 
-export const inMemoryRepository: Repository = createRepostitory()
+export const inMemoryRepository: PostRepository = createRepostitory()
 
 const envVars: EnvVariables = {
     PORT: 7777,

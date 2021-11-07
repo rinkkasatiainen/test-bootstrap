@@ -1,11 +1,11 @@
 import {validate} from 'uuid'
-import {Tweet} from '../entities/tweet'
+import {Post} from '../entities/post'
 import {ReadRepo} from '../repository/tweets'
 
-export const getTweet: (repository: ReadRepo) => (tweetId: string) => Promise<Tweet> =
+export const getTweet: (repository: ReadRepo) => (tweetId: string) => Promise<Post> =
     repo => async (tweetId) => {
         if (!validate(tweetId)) {
-            return Promise.reject({message: `Invalid tweet ID: ${tweetId}`})
+            return Promise.reject({message: `Invalid post ID: ${tweetId}`})
         }
         const tweet = await repo.read(tweetId)
         if( tweet === null) {
@@ -17,7 +17,7 @@ export const getTweet: (repository: ReadRepo) => (tweetId: string) => Promise<Tw
 export const getTweetLikes: (repository: ReadRepo) => (tweetId: string) => Promise<string[]> =
     repo => tweetId => {
         if (!validate(tweetId)) {
-            return Promise.reject({message: `Invalid tweet ID: ${tweetId}`})
+            return Promise.reject({message: `Invalid post ID: ${tweetId}`})
         }
 
         return repo.likes(tweetId)

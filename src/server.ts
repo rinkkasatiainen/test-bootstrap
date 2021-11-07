@@ -3,7 +3,7 @@ import {AddressInfo} from 'net'
 import express, {Application, Router} from 'express'
 import bodyParser from 'body-parser'
 import {routes} from './web/routes'
-import {Repository} from './domain/repository/tweets'
+import {PostRepository} from './domain/repository/tweets'
 import {Tweeter, User, UserRepository} from "./domain/repository/users";
 
 export interface EnvVariables {
@@ -15,7 +15,7 @@ class InMemoryUserRepository implements UserRepository {
         return Promise.resolve(new Tweeter(userId))
     }
 }
-export const startServer: (x: EnvVariables) => (y: Repository) => Promise<Server> =
+export const startServer: (x: EnvVariables) => (y: PostRepository) => Promise<Server> =
     envVars => repository => {
         const router: Router = Router()
 

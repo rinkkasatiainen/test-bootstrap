@@ -1,6 +1,6 @@
 import {NextFunction, Request, Response, Router} from 'express'
-import {Repository} from '../domain/repository/tweets'
-import {getTweet, getTweetLikes} from '../domain/actions/get-tweet'
+import {PostRepository} from '../domain/repository/tweets'
+import {getTweet, getTweetLikes} from '../domain/queries/get-tweet'
 import {newTweet, replyTo} from '../domain/actions/reply-to'
 import {UserRepository} from '../domain/repository/users'
 
@@ -17,7 +17,7 @@ const requireBody = (req: Request, res: Response, next: NextFunction) => {
     })
 }
 
-export const routes: (a: Router) => (b: Repository) => (c: UserRepository) => Router =
+export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) => Router =
     router => tweetStore => userRepository => {
 
 
@@ -30,10 +30,10 @@ export const routes: (a: Router) => (b: Repository) => (c: UserRepository) => Ro
             res.json({status})
         })
 
-        router.get('/tweet/:tweetId', (req: Request, res: Response) => {
-            const tweetId = req.params.tweetId
-            void getTweet(tweetStore)(tweetId)
-                .then(tweet => res.json({tweet}))
+        router.get('/post/:postId', (req: Request, res: Response) => {
+            const postId = req.params.postId
+            void getTweet(tweetStore)(postId)
+                .then(post => res.json({post}))
                 .catch((error: Error & { status: number }) => {
                     const message: string = error.message || 'unknown error'
                     if (error.status) {
@@ -47,9 +47,9 @@ export const routes: (a: Router) => (b: Repository) => (c: UserRepository) => Ro
                 })
         })
 
-        router.get('/tweet/:tweetId/likes', (req: Request, res: Response) => {
-            const tweetId = req.params.tweetId
-            void getTweetLikes(tweetStore)(tweetId)
+        router.get('/post/:postId/likes', (req: Request, res: Response) => {
+            const postId = req.params.postId
+            void getTweetLikes(tweetStore)(postId)
                 .then(likes => res.json({likes}))
                 .catch((error: Error & { status?: number }) => {
                     const message: string = error.message || 'unknown error'
@@ -73,12 +73,12 @@ export const routes: (a: Router) => (b: Repository) => (c: UserRepository) => Ro
                 res.json({status: 'uuid'})
             })
 
-        router.post('/tweet/:tweetId/reply/:userId',
+        router.post('/post/:postId/reply/:userId',
             requireBody,
             async (req: Request, res: Response) => {
-                const {tweetId, userId} = req.params
+                const {postId, userId} = req.params
                 const body: { text: string } = req.body
-                void replyTo(userRepository, tweetStore)(userId, body.text, tweetId)
+                await replyTo(userRepository, tweetStore)(userId, body.text, postId)
                     .then(() => res.json({status: 'uuid'}))
                     .catch((error: Error & { status?: number }) => {
                         const message: string = error.message || 'unknown error'

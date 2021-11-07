@@ -1,9 +1,9 @@
-import {Repository} from '../repository/tweets'
+import {PostRepository} from '../repository/tweets'
 import {UserRepository} from '../repository/users'
 
 
 export const newTweet:
-    (userRepository: UserRepository, tweetStore: Repository) =>
+    (userRepository: UserRepository, tweetStore: PostRepository) =>
         (userId: string, text: string) => Promise<void> =
     (userRepository, tweetStore) => async (userId, text) => {
         const user = await userRepository.findUser(userId)
@@ -14,17 +14,17 @@ export const newTweet:
     }
 
 export const replyTo:
-    (userRepository: UserRepository, tweerRepository: Repository) =>
+    (userRepository: UserRepository, postStore: PostRepository) =>
         (userId: string, text: string, replyToId: string) => Promise<void> =
-    (userRepository, tweetStore) => async (userId, text, tweetId) => {
+    (userRepository, postStore) => async (userId, text, postId) => {
         const user = await userRepository.findUser(userId)
         const tweet = user.newTweet(text)
-        const replyToTweet = await tweetStore.read(tweetId)
+        const replyToTweet = await postStore.read(postId)
         if( replyToTweet === null) {
-            return Promise.reject({status: 404, message: `not found: ${tweetId}`})
+            return Promise.reject({status: 404, message: `not found: ${postId}`})
         }
-        tweet.setReplyTo(tweetId)
+        tweet.setReplyTo(postId)
         // tweet.setMentions( replyToTweet )
         // tweet.setMentions(body.mentions)
-        await tweet.save(tweetStore.store)
+        await tweet.save(postStore.store)
     }

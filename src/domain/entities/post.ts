@@ -1,4 +1,4 @@
-export interface Tweet {
+export interface Post {
     // id: string;
     // userId: string;
     // text: string;
@@ -17,7 +17,7 @@ export interface Tweet {
 
 type StoreFunc = (tweetId: string, text: string, userId: string, replyTo?: string, quote?: string, mentions?: string[]) => Promise<void>
 
-export class TweetImpl implements Tweet {
+export class PostImpl implements Post {
     private replyTo?: string;
 
     public constructor(private readonly text: string, private readonly id: string, private readonly userId: string) {
