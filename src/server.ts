@@ -4,7 +4,7 @@ import express, {Application, Router} from 'express'
 import bodyParser from 'body-parser'
 import {routes} from './web/routes'
 import {PostRepository} from './domain/repository/posts'
-import {CanSendAPost, User, UserRepository} from "./domain/repository/users";
+import {CanSendAPost, User, UserRepository} from './domain/repository/users'
 
 export interface EnvVariables {
     PORT: number;

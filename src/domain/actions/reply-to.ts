@@ -8,8 +8,8 @@ export const replyTo:
     (userRepository, postStore) => async (userId, text, postId) => {
         const user = await userRepository.findUser(userId)
         const post = user.newPost(text)
-        const replyTo = await postStore.read(postId)
-        if( replyTo === null) {
+        const replyToMsg = await postStore.read(postId)
+        if( replyToMsg === null) {
             return Promise.reject({status: 404, message: `not found: ${postId}`})
         }
         post.setReplyTo(postId)

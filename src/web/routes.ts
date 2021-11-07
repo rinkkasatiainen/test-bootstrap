@@ -70,6 +70,7 @@ export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) =
             requireBody,
             async (req: Request, res: Response) => {
                 const userId = req.params.userId
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const body: { text: string } = req.body
                 await newPost(userRepository, tweetStore)(userId, body.text)
                 res.json({status: 'uuid'})
@@ -79,6 +80,7 @@ export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) =
             requireBody,
             async (req: Request, res: Response) => {
                 const {postId, userId} = req.params
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const body: { text: string } = req.body
                 await replyTo(userRepository, tweetStore)(userId, body.text, postId)
                     .then(() => res.json({status: 'uuid'}))

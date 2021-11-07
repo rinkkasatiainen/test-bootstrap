@@ -1,5 +1,5 @@
-import {ReadRepo} from '../repository/posts'
 import {validate} from 'uuid'
+import {ReadRepo} from '../repository/posts'
 
 export const getPostLikes: (repository: ReadRepo) => (postId: string) => Promise<string[]> =
     repo => postId => {
