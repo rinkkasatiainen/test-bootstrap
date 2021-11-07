@@ -2,7 +2,7 @@ import {Post} from '../entities/post'
 
 export interface WriteRepo {
     store: (
-        tweetId: string,
+        postId: string,
         text: string,
         userId: string,
         replyTo?: string,

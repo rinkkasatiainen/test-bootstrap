@@ -5,20 +5,21 @@ export interface Post {
     // dateTime: string;
 
     save(store:
-             (tweetId: string,
-              text: string,
-              userId: string,
-              replyTo?: string,
-              quote?: string,
-              mentions?: string[]) => Promise<void>): Promise<void>;
+        (postId: string,
+            text: string,
+            userId: string,
+            replyTo?: string,
+            quote?: string,
+            mentions?: string[]) => Promise<void>): Promise<void>;
 
-    setReplyTo(tweetId: string): void;
+    setReplyTo(postId: string): void;
 }
 
-type StoreFunc = (tweetId: string, text: string, userId: string, replyTo?: string, quote?: string, mentions?: string[]) => Promise<void>
+type StoreFunc = (postId: string, text: string, userId: string, replyTo?: string, quote?: string, mentions?: string[])
+    => Promise<void>
 
 export class PostImpl implements Post {
-    private replyTo?: string;
+    private replyTo?: string
 
     public constructor(private readonly text: string, private readonly id: string, private readonly userId: string) {
         this.replyTo = undefined
@@ -28,8 +29,8 @@ export class PostImpl implements Post {
         return store(this.id, this.text, this.userId, this.replyTo)
     }
 
-    public setReplyTo(tweetId: string): void {
-        this.replyTo = tweetId
+    public setReplyTo(postId: string): void {
+        this.replyTo = postId
     }
 }
 

@@ -6,7 +6,7 @@ import chai, {expect} from 'chai'
 import sinonChai from 'sinon-chai'
 import {dummyRepository, testServer} from '../test-server'
 import {Post, PostImpl} from '../../src/domain/entities/post'
-import {ReadRepo, PostRepository, WriteRepo} from '../../src/domain/repository/tweets'
+import {ReadRepo, PostRepository, WriteRepo} from '../../src/domain/repository/posts'
 
 chai.use(sinonChai)
 

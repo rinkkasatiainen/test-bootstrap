@@ -1,7 +1,7 @@
 import {Server} from 'http'
 import {startServer} from '../src/server'
 import {Post, PostImpl} from '../src/domain/entities/post'
-import {PostRepository} from '../src/domain/repository/tweets'
+import {PostRepository} from '../src/domain/repository/posts'
 
 export interface TestServer {
     start: (r: PostRepository) => Promise<Server>;

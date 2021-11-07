@@ -1,5 +1,5 @@
 import {EnvVariables, startServer} from './src/server'
-import {PostRepository} from './src/domain/repository/tweets'
+import {PostRepository} from './src/domain/repository/posts'
 import {Post, PostImpl} from './src/domain/entities/post'
 
 export {startServer} from './src/server'

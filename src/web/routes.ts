@@ -1,8 +1,10 @@
 import {NextFunction, Request, Response, Router} from 'express'
-import {PostRepository} from '../domain/repository/tweets'
-import {getTweet, getTweetLikes} from '../domain/queries/get-tweet'
-import {newTweet, replyTo} from '../domain/actions/reply-to'
+import {PostRepository} from '../domain/repository/posts'
+import {getPost} from '../domain/queries/get-post'
+import {replyTo} from '../domain/actions/reply-to'
 import {UserRepository} from '../domain/repository/users'
+import {getPostLikes} from '../domain/queries/get-post-likes'
+import {newPost} from '../domain/actions/new-post'
 
 const requireBody = (req: Request, res: Response, next: NextFunction) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -32,7 +34,7 @@ export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) =
 
         router.get('/post/:postId', (req: Request, res: Response) => {
             const postId = req.params.postId
-            void getTweet(tweetStore)(postId)
+            void getPost(tweetStore)(postId)
                 .then(post => res.json({post}))
                 .catch((error: Error & { status: number }) => {
                     const message: string = error.message || 'unknown error'
@@ -49,7 +51,7 @@ export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) =
 
         router.get('/post/:postId/likes', (req: Request, res: Response) => {
             const postId = req.params.postId
-            void getTweetLikes(tweetStore)(postId)
+            void getPostLikes(tweetStore)(postId)
                 .then(likes => res.json({likes}))
                 .catch((error: Error & { status?: number }) => {
                     const message: string = error.message || 'unknown error'
@@ -69,7 +71,7 @@ export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) =
             async (req: Request, res: Response) => {
                 const userId = req.params.userId
                 const body: { text: string } = req.body
-                await newTweet(userRepository, tweetStore)(userId, body.text)
+                await newPost(userRepository, tweetStore)(userId, body.text)
                 res.json({status: 'uuid'})
             })
 

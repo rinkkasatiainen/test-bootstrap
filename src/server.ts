@@ -3,8 +3,8 @@ import {AddressInfo} from 'net'
 import express, {Application, Router} from 'express'
 import bodyParser from 'body-parser'
 import {routes} from './web/routes'
-import {PostRepository} from './domain/repository/tweets'
-import {Tweeter, User, UserRepository} from "./domain/repository/users";
+import {PostRepository} from './domain/repository/posts'
+import {CanSendAPost, User, UserRepository} from "./domain/repository/users";
 
 export interface EnvVariables {
     PORT: number;
@@ -12,7 +12,7 @@ export interface EnvVariables {
 
 class InMemoryUserRepository implements UserRepository {
     public findUser(userId: string): Promise<User> {
-        return Promise.resolve(new Tweeter(userId))
+        return Promise.resolve(new CanSendAPost(userId))
     }
 }
 export const startServer: (x: EnvVariables) => (y: PostRepository) => Promise<Server> =
