@@ -1,13 +1,19 @@
-import {Post} from '../entities/post'
+import {Post, PostId} from '../entities/post'
+import {AuthenticatedUser} from './users'
+
+export interface NewPost {
+    createdById: string;
+    post: {
+        text: string;
+        authorId: AuthenticatedUser;
+        postId: PostId;
+    };
+}
 
 export interface WriteRepo {
     store: (
-        postId: string,
-        text: string,
-        userId: string,
-        replyTo?: string,
-        quote?: string,
-        mentions?: string[]) => Promise<void>;
+        x: NewPost,
+    ) => Promise<void>;
 }
 
 export interface ReadRepo {

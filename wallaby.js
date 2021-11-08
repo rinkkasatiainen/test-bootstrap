@@ -7,6 +7,8 @@ module.exports = function() {
         ],
         tests: [
             {pattern: '/**/test/**/*.spec.ts' },
+            {pattern: '/**/_test/**/*.spec.ts' },
+            {pattern: 'test/acceptance/*.spec.ts', ignore: true},
             // {pattern: '/**/test/**/*.test.ts' },
             // {pattern: '/**/test/**/*.ts' }
         ],

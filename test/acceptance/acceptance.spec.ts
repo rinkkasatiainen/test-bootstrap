@@ -29,13 +29,17 @@ const mockReadRepoWith: (x: ReadRepo) => PostRepository =
 const likes = [v4().toString(), v4().toString()]
 const idInRepository = v4().toString()
 const post = new PostImpl('Some text', idInRepository, 'user-id')
+let uuid: string
+const uuidProvider = () => uuid
 
 describe('Express Server', () => {
     describe('just work', () => {
         let app: Server
 
         before('start test server', async () => {
-            app = await testServer.start(dummyRepository)
+            uuid = v4()
+
+            app = await testServer.start(dummyRepository,  uuidProvider)
         })
 
         after('stop test server', () => new Promise(resolve => {
@@ -68,7 +72,7 @@ describe('Express Server', () => {
             fakeRepository = mockReadRepoWith({
                 read(id: string): Promise<Post | null> {
                     if (id === idInRepository) {
-                        return Promise.resolve(post)
+                        return Promise.resolve({foo: 'bar'})
                     }
                     return Promise.resolve(null)
                 },
@@ -76,7 +80,7 @@ describe('Express Server', () => {
                     return Promise.resolve(likes)
                 },
             })
-            appServer = await testServer.start(fakeRepository)
+            appServer = await testServer.start(fakeRepository, uuidProvider)
         })
 
         after((done) => {
@@ -88,14 +92,12 @@ describe('Express Server', () => {
         })
 
         it('can get post', (done) => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
             const {text, id, userId} = post
             const expected = {text, id, userId}
             void request(appServer)
                 .get(`/post/${idInRepository}`)
-                .expect({post: expected})
                 .expect(200, done)
+                .expect({post: expected})
         })
 
         it('post id needs to be UUID', (done) => {
@@ -128,6 +130,7 @@ describe('Express Server', () => {
         let storeStub: SinonStub
 
         before(async () => {
+            uuid = v4()
             storeStub = sinon.stub()
             fakeRepository = mockWriteRepoWith({
                 store: storeStub,
@@ -138,7 +141,7 @@ describe('Express Server', () => {
                     return Promise.resolve(null)
                 },
             })
-            appServer = await testServer.start(fakeRepository)
+            appServer = await testServer.start(fakeRepository, uuidProvider)
         })
 
         afterEach(() => {
@@ -155,16 +158,16 @@ describe('Express Server', () => {
 
         it('returns post id', async () => {
             await request(appServer)
-                .post('/user/some-user-id/tweets')
+                .post('/user/some-user-id/posts')
                 .send({text: 'some text'})
-                .expect(200)
-                .expect({status: 'uuid'})
-            expect(storeStub).to.have.been.calledWith('uuid', 'some text', 'some-user-id')
+                .expect(201)
+                .expect( 'link', `/user/some-user-id/post/${uuid}` )
+                .expect({status: 'created', id: uuid})
         })
 
         it('requires body', async () => {
             await request(appServer)
-                .post('/user/some-user-id/tweets')
+                .post('/user/some-user-id/posts')
                 .expect(500)
                 .expect({status: 'missing body'})
         })
@@ -177,7 +180,6 @@ describe('Express Server', () => {
                     .send({text: 'some reply'})
                     .expect(200)
                     .expect({status: 'uuid'})
-                expect(storeStub).to.have.been.calledWith('uuid', 'some reply', userId, idInRepository)
             })
             it('only on valid post id', async () => {
                 const userId = 'some-user-id'

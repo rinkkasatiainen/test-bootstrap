@@ -1,18 +1,27 @@
-import {Post, PostImpl} from '../entities/post'
+import {Post} from '../entities/post'
+import {Result} from '../result'
+import {NewPostCommand} from '../actions/new-post'
+
+export interface MightBeAuthenticatedUser {
+    id?: string;
+}
+export interface AuthenticatedUser {
+    id: string;
+}
 
 export interface User {
-    newPost: (text: string) => Post;
+    newPost: (cmd: NewPostCommand) => Post;
 }
 
 export interface UserRepository {
-    findUser: (userId: string) => Promise<User>;
+    findUser: (userId: string) => Promise<Result<User>>;
 }
 
 export class CanSendAPost implements User {
     public constructor(private readonly id: string) {
     }
 
-    public newPost(text: string): Post {
-        return new PostImpl(text, 'uuid', this.id)
+    public newPost(cmd: NewPostCommand): Post {
+        return {}
     }
 }

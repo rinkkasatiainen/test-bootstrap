@@ -4,7 +4,7 @@ import {Post, PostImpl} from '../src/domain/entities/post'
 import {PostRepository} from '../src/domain/repository/posts'
 
 export interface TestServer {
-    start: (r: PostRepository) => Promise<Server>;
+    start: (r: PostRepository, uuidProvider) => Promise<Server>;
     on: (port: number) => { start: (r: PostRepository) => Promise<Server> };
 }
 
@@ -34,7 +34,7 @@ const createRepostitory: () => PostRepository = () => {
 export const dummyRepository: PostRepository = createRepostitory()
 
 export const testServer: TestServer = {
-    start: async (repository: PostRepository) => await startServer({PORT: 7878})(repository),
+    start: startServer({PORT: 7878}),
     on: (port) => ({
         start: async (repository: PostRepository) => await startServer({PORT: port})(repository),
     }),

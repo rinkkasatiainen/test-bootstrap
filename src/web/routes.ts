@@ -4,7 +4,8 @@ import {getPost} from '../domain/queries/get-post'
 import {replyTo} from '../domain/actions/reply-to'
 import {UserRepository} from '../domain/repository/users'
 import {getPostLikes} from '../domain/queries/get-post-likes'
-import {newPost} from '../domain/actions/new-post'
+import {canPostNewMessage, newPost, UuidProvider} from '../domain/actions/new-post'
+import {isSuccess, Result} from '../domain/result'
 
 const requireBody = (req: Request, res: Response, next: NextFunction) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -19,8 +20,8 @@ const requireBody = (req: Request, res: Response, next: NextFunction) => {
     })
 }
 
-export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) => Router =
-    router => tweetStore => userRepository => {
+export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) => (d: UuidProvider) => Router =
+    router => postStore => userRepository => uuidProvider => {
 
 
         router.get('/', (req: Request, res: Response) => {
@@ -34,7 +35,7 @@ export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) =
 
         router.get('/post/:postId', (req: Request, res: Response) => {
             const postId = req.params.postId
-            void getPost(tweetStore)(postId)
+            void getPost(postStore)(postId)
                 .then(post => res.json({post}))
                 .catch((error: Error & { status: number }) => {
                     const message: string = error.message || 'unknown error'
@@ -51,7 +52,7 @@ export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) =
 
         router.get('/post/:postId/likes', (req: Request, res: Response) => {
             const postId = req.params.postId
-            void getPostLikes(tweetStore)(postId)
+            void getPostLikes(postStore)(postId)
                 .then(likes => res.json({likes}))
                 .catch((error: Error & { status?: number }) => {
                     const message: string = error.message || 'unknown error'
@@ -66,14 +67,21 @@ export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) =
                 })
         })
 
-        router.post('/user/:userId/tweets',
+        router.post('/user/:userId/posts',
             requireBody,
             async (req: Request, res: Response) => {
                 const userId = req.params.userId
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const body: { text: string } = req.body
-                await newPost(userRepository, tweetStore)(userId, body.text)
-                res.json({status: 'uuid'})
+                const result: Result<{ postId: string }> =
+                    await newPost(userRepository, postStore, uuidProvider, canPostNewMessage)(
+                        {id: userId}, {text: body.text, authorId: {id: userId}},
+                    )
+                if (isSuccess(result)) {
+                    res.status(201)
+                    res.header('link', `/user/${userId}/post/${result.data.postId}`)
+                    res.json({status: 'created', id: result.data.postId})
+                }
             })
 
         router.post('/post/:postId/reply/:userId',
@@ -82,7 +90,7 @@ export const routes: (a: Router) => (b: PostRepository) => (c: UserRepository) =
                 const {postId, userId} = req.params
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const body: { text: string } = req.body
-                await replyTo(userRepository, tweetStore)(userId, body.text, postId)
+                await replyTo(userRepository, postStore)(userId, body.text, postId)
                     .then(() => res.json({status: 'uuid'}))
                     .catch((error: Error & { status?: number }) => {
                         const message: string = error.message || 'unknown error'

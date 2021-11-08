@@ -7,5 +7,5 @@ export const getPostLikes: (repository: ReadRepo) => (postId: string) => Promise
             return Promise.reject({message: `Invalid post ID: ${postId}`})
         }
 
-        return repo.likes(postId)
+        return repo.likes()
     }
