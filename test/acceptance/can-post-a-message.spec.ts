@@ -1,10 +1,13 @@
-import { expect } from 'chai'
-import { v4 } from 'uuid'
+import {expect} from 'chai'
+import {
+    PostMessageCommandHandler,
+    SentMessage, SocialMediaUser,
+    StoreMessage,
+} from '../../src/domain/actions/post-message-command-handler'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Query {
 }
-
 
 interface QueryHandler<Q extends Query, R> {
     execute: (query: Q) => R;
@@ -14,56 +17,37 @@ interface GetMessageQuery {
     userId: string;
 }
 
-interface SentMessage {
-    text: string;
-}
-
 interface Message {
     time: string;
     text: string;
 }
 
-interface Timelime {
+interface Timeline {
     messages: Message[];
 }
 
-class GetMessageQueryHandler implements QueryHandler<GetMessageQuery, Timelime> {
-    public execute(query: GetMessageQuery): Timelime {
+class GetMessageQueryHandler implements QueryHandler<GetMessageQuery, Timeline> {
+    public execute(query: GetMessageQuery): Timeline {
         return { messages: [] }
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface Command {
-}
-
-interface CommandHandler<T extends Command, R> {
-    execute: (message: T) => R;
-}
-
-interface PostMessageCommand {
-    userId: string;
-    message: SentMessage;
-}
-
-class PostMessageCommandHandler implements CommandHandler<PostMessageCommand, string> {
-    public execute(message: PostMessageCommand): string {
-        return ''
-    }
-}
+const storeMessage: StoreMessage = () => Promise.resolve()
 
 describe('Alice can publish messages to a personal timeline', () => {
-    it('messages can be read by unauthenticated user', () => {
-        const aliceUserId: string = v4().toString()
+    it('messages can be read by unauthenticated user', async () => {
+        const alice: SocialMediaUser = {
+            createNewMessage: () => ({}),
+        }
         const firstMessageSentByAlice: SentMessage = { text: 'Hello World!' }
         // Alice posts a message
 
-        const postMessageCommandHandler: PostMessageCommandHandler = new PostMessageCommandHandler()
-        postMessageCommandHandler.execute({ userId: aliceUserId, message: firstMessageSentByAlice })
+        const postMessageCommandHandler: PostMessageCommandHandler = new PostMessageCommandHandler(storeMessage)
+        await postMessageCommandHandler.execute({ user: alice, message: firstMessageSentByAlice })
 
         // Verify that anyone can read the message
         const getMessagesQueryHandler: GetMessageQueryHandler = new GetMessageQueryHandler()
-        const alicePublicTimeline = getMessagesQueryHandler.execute({ userId: aliceUserId })
+        const alicePublicTimeline = getMessagesQueryHandler.execute({ userId: 'foo' })
         expect(alicePublicTimeline).to.eql({ messages: [{ time: 'now', ...firstMessageSentByAlice }] })
     })
 })
