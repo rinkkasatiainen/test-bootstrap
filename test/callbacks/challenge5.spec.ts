@@ -1,8 +1,6 @@
-
-
-// TODO: Fix Typescript compiler errors to make the callback accept a generic type and return that a generic result
 import { expect } from 'chai'
 
+// TODO: Fix Typescript compiler errors to make the callback accept a generic type and return that a generic result
 function mapWith(array: number[], callback: (input: unknown) => unknown): unknown[] {
     const newArray: unknown[] = []
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
