@@ -1,6 +1,6 @@
 See http://csbin.io/callbacks
 
-##Challenge 1
+## Challenge 1
 Create a function `addTwo` that accepts one input and adds 2 to it.
 
 ## Challenge 2
