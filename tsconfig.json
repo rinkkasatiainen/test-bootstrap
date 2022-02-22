@@ -25,14 +25,23 @@
     ],
     "forceConsistentCasingInFileNames": true,
     "rootDir": ".",
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "*": [
+        "node_modules/*",
+        "test/chai.d.ts"
+      ]
+    }
+
   },
   "include": [
     ".",
     "./src/**/*.ts",
-    "./test/**/*.ts"
+    "./test/**/*.ts",
+    "test-setup.ts"
   ],
   "exclude": [
     "node_modules",
+    "wallaby.js"
   ]
 }
