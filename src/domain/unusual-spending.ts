@@ -15,7 +15,6 @@ export class UnusualSpendingImpl implements UnusualSpending {
         private readonly categorize: Categorize) {
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public calculate(month: Month, year: Year): void {
         const current = this.paymentsApi('userId', year, month)
         const previous = this.paymentsApi('userId', year, month.previous())

@@ -14,7 +14,7 @@ const spending: (m: Money) => { of: (type: Category) => Spending } =
 
 describe('Categorize', () => {
     describe('when category does not exist previously', () => {
-        it('when all is the same', () => {
+        it('it is not unusual', () => {
             const current = [spending(Money.EUR(10, 0)).of(Category.restaurant)]
             const previous = [spending(Money.EUR(1, 0)).of(Category.entertainment)]
 
@@ -25,7 +25,7 @@ describe('Categorize', () => {
 
     })
     describe('just 1 category', () => {
-        it('when all is the same', () => {
+        it('when spending is the same', () => {
             const current = [spending(Money.EUR(10, 0)).of(Category.restaurant)]
             const previous = [...current]
 
@@ -34,7 +34,7 @@ describe('Categorize', () => {
             expect(result.isUnusualSpending()).to.eql(false)
         })
 
-        it('when one spending is 200% (exactly more)', () => {
+        it('when one spending is 200% more', () => {
             const current = [spending(Money.EUR(20, 0)).of(Category.restaurant)]
             const previous = [spending(Money.EUR(10, 0)).of(Category.restaurant)]
 
