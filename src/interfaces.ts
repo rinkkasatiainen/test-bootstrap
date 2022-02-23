@@ -1,8 +1,17 @@
+import { PatternMatchingType } from './utils/matcher'
+
 export interface Mars {
 }
 
+export type Forward = PatternMatchingType<'F'>
+export type Backward = PatternMatchingType<'B'>
+
+
+export type MarsSingleCommand = Forward | Backward
+export type Cmds = MarsSingleCommand['_type']
+
 export interface Command {
-    parse(param: (cmd: string) => void): void;
+    parse(param: (cmd: MarsSingleCommand) => void): void;
 }
 
 export interface MarsRover {
@@ -16,6 +25,9 @@ export interface RoverLander {
 }
 
 export type Directions = 'N' | 'S' | 'E' | 'W'
+export interface Dir extends PatternMatchingType<Directions>{
+    oppositeDirection: () => Dir;
+}
 export interface Location {
     equals: (other: Location) => boolean;
 
