@@ -12,8 +12,8 @@ export class RoverCommand implements Command {
     }
 
     public static of(cmd: string) {
-        const strings: string[] = cmd.split('')
-        if( assertX( strings) ){
+        const strings: string[] = cmd.split('').map(it => it.toUpperCase())
+        if( assertX(strings) ){
             return new RoverCommand( strings )
         }
         return new RoverCommand([])
@@ -21,7 +21,7 @@ export class RoverCommand implements Command {
 
     public parse(callback: (cmd: MarsSingleCommand) => void): void {
         this.cmd.forEach( it => {
-            const cmd: MarsSingleCommand = { _type: it.toUpperCase() }
+            const cmd: MarsSingleCommand = { _type: it }
             return callback(cmd)
         })
     }

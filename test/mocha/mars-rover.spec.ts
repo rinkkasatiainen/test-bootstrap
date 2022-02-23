@@ -27,6 +27,17 @@ describe('MarsRover', () => {
         expect(rover.location()).to.be.locationOf(landingLocation)
     })
 
+    describe('given wrong commands', () => {
+        it('does nothing', () => {
+            const rover = new LandedMarsRover(landingLocation, createDir('N'))
+
+            const marsCommand = RoverCommand.of('ffx')
+            rover.execute(marsCommand)
+
+            expect(rover.location()).to.be.locationOf(landingLocation)
+        })
+    })
+
     describe('going forward', () => {
         it('can take commands', () => {
             const rover = new LandedMarsRover(landingLocation, createDir('N'))
