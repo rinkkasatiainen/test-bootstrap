@@ -1,4 +1,9 @@
-import { Mars } from '../interfaces'
+import { Planet, Location } from '../interfaces'
 
-export class MarsI implements Mars {
+export class Mars implements Planet {
+    public readonly obstacles: Location[] = []
+
+    public addObstacle(location: Location): void {
+        this.obstacles.push(location)
+    }
 }

@@ -11,6 +11,7 @@ declare global {
     }
 }
 
+// eslint-disable-next-line no-console
 console.log('adding custom matcher for \'locationOf\'')
 Assertion.addMethod('locationOf', function(loc: Location) {
     const obj: Location = this._obj as Location

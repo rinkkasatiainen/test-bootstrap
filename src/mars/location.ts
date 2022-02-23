@@ -44,4 +44,9 @@ export class MarsLocation implements Location {
             W: shape => new MarsLocation(shape.lat, decreaseByOne(shape.lon)),
         })({ ...this.c, _type: direction })
     }
+
+    public distanceFrom(other: Location): number {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        return Math.abs(other.c.lat - this.c.lat) + Math.abs(other.c.lon - this.c.lon) ;
+    }
 }

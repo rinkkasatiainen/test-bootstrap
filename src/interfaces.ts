@@ -1,6 +1,7 @@
 import { PatternMatchingType } from './utils/matcher'
 
-export interface Mars {
+export interface Planet {
+    addObstacle(location: Location): void
 }
 
 export type Forward = PatternMatchingType<'F'>
@@ -23,7 +24,7 @@ export interface MarsRover {
 }
 
 export interface RoverLander {
-    landOn: (locationOn: Location, planet: Mars) => MarsRover;
+    landOn: (locationOn: Location, planet: Planet) => MarsRover;
 }
 
 export type Directions = 'N' | 'S' | 'E' | 'W'
@@ -36,4 +37,6 @@ export interface Location {
     equals: (other: Location) => boolean;
 
     nextTo(direction: Directions): Location;
+
+    distanceFrom(locationOfRadar: Location): number
 }

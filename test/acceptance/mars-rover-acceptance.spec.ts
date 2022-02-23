@@ -1,36 +1,53 @@
 import { expect } from 'chai'
-import { Location, Mars } from '../../src/interfaces'
+import { Location, Planet } from '../../src/interfaces'
 import { MarsLocation } from '../../src/mars/location'
-import { MarsI } from '../../src/mars/planet'
+import { Mars } from '../../src/mars/planet'
 import { MarsRoverLander } from '../../src/rover/lander'
 import { RoverCommand } from '../../src/rover/command'
 
 
-function aRandomLocationOn(mars: Mars): Location {
-    return new MarsLocation(1, 1)
+function aRandomLocationOn(mars: Planet): Location {
+    return new MarsLocation(Math.floor(Math.random() * 180), Math.floor(Math.random() * 180))
 }
 
 describe('Mars Rover', () => {
-    it.skip('Can move forward and back to original spot', () => {
-        const mars = new MarsI()
-        const locationOn = aRandomLocationOn(mars)
+    let mars: Planet
+    let locationOn: Location
+    let lander: MarsRoverLander
 
-        const lander = new MarsRoverLander()
-        const rover = lander.landOn(locationOn)
+    beforeEach(() => {
+        mars = new Mars()
+        locationOn = aRandomLocationOn(mars)
+        lander = new MarsRoverLander()
+    })
+    it('Can move forward and back to original spot', () => {
+        const rover = lander.landOn(locationOn, mars)
 
-        rover.execute(new RoverCommand('ffbb'))
+        rover.execute(RoverCommand.of('ffbb'))
 
         expect(rover.location()).to.eql(locationOn)
     })
 
+    it('can move in a circle', () => {
+        const marsRover = lander.landOn(locationOn, mars)
 
-    it.skip('Can move forward, turn 180 and back to original spot')
-    it.skip('Can move as a circle')
-    it.skip('Can move through whole sphere to original spot')
+        marsRover.execute(RoverCommand.of('flflflf'))
+
+        expect(marsRover.location()).to.be.locationOf(locationOn)
+    })
+    it('Can move forward, turn 180 and back to original spot')
+    it('Can move as a circle')
+    it('Can move through whole sphere to original spot')
 
     describe('when sees obstacles', () => {
-        it.skip('does not move if obstacle straight ahead', () => {
-            expect(true).to.eql(false)
+        it('does not move if obstacle straight ahead', () => {
+
+            mars.addObstacle(locationOn.nextTo('N'))
+            const rover = lander.landOn(locationOn, mars)
+
+            rover.execute(RoverCommand.of('ff'))
+
+            expect(rover.location()).to.eql(locationOn)
         })
         it('goes back to origial spot after obstacle')
     })
