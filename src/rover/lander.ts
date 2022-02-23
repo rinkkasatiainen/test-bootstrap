@@ -1,53 +1,32 @@
 // eslint-disable-next-line max-classes-per-file
-import { Cmds, Command, Dir, Directions, Location, MarsRover, MarsSingleCommand, RoverLander } from '../interfaces'
+import { Dir, Directions, Location, Mars, MarsRover, RoverLander } from '../interfaces'
 import { matcher } from '../utils/matcher'
+import { LandedMarsRover } from './landedMarsRover'
 
 export class MarsRoverLander implements RoverLander {
-    public landOn(locationOn: Location): MarsRover {
-        return new LandedMarsRover(locationOn, 'N')
+    public landOn(locationOn: Location, planet: Mars): MarsRover {
+        return new LandedMarsRover(locationOn, createDir('N'))
     }
 }
 
-interface DirectionEvent {
-    _type: 'directionEent';
-    direction: Directions;
-}
+export const createDir: (x: Directions) => Dir = direction => {
+    const opposite = matcher<Directions, { _type: Directions }, Dir>({
+        N: () => createDir('S'),
+        E: () => createDir('W'),
+        S: () => createDir('N'),
+        W: () => createDir('E'),
+    })
+    const clockwise = matcher<Directions, { _type: Directions }, Dir>({
+        N: () => createDir('E'),
+        E: () => createDir('S'),
+        S: () => createDir('W'),
+        W: () => createDir('N'),
+    })
 
-interface LocationEvent {
-    _type: 'locationEvent';
-    location: Location;
-}
-
-type Event = LocationEvent | DirectionEvent
-
-
-export class LandedMarsRover implements MarsRover {
-    private readonly events: Event[] = []
-
-    public constructor(location: Location, private readonly direction: Dir) {
-        this.events = [{ _type: 'locationEvent', location }, { _type: 'directionEent', direction: direction._type }]
-    }
-
-    public execute(command: Command): void {
-        command.parse(cmd => {
-            const location = matcher<Cmds, MarsSingleCommand, Location>({
-                B: (shape) => {
-                    return this.location().nextTo(this.direction.oppositeDirection()._type)
-                },
-                F: (shape) => {
-                    return this.location().nextTo(this.direction._type)
-                },
-            })(cmd)
-            this.events.push({ _type: 'locationEvent', location })
-        })
-    }
-
-    public location(): Location {
-        const locations: Location[] = this.events
-            .filter(it => it._type === 'locationEvent')
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            .map((it: LocationEvent) => it.location)
-        return locations[locations.length - 1]
-    }
+    return ({
+        _type: direction,
+        oppositeDirection: () => opposite({ _type: direction }),
+        clockWise: () => clockwise({ _type: direction }),
+        antiClockWise: () => opposite(clockwise({ _type: direction })),
+    })
 }

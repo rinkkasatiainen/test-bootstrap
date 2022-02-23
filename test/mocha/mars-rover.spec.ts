@@ -1,22 +1,9 @@
 import { expect } from 'chai'
 
-import { LandedMarsRover } from '../../src/rover/lander'
 import { MarsLocation } from '../../src/mars/location'
-import {} from '../utils/chai-matchers'
 import { RoverCommand } from '../../src/rover/command'
-import { Dir, Directions } from '../../src/interfaces'
-import { matcher } from '../../src/utils/matcher'
-
-const createDir: (x: Directions) => Dir = direction => ({
-    _type: direction,
-    oppositeDirection: () =>
-        matcher<Directions, {_type: Directions}, Dir>({
-            N: () => createDir('S'),
-            E: () => createDir('W'),
-            S: () => createDir('N'),
-            W: () => createDir('E'),
-        })({ _type: direction }),
-})
+import { LandedMarsRover } from '../../src/rover/landedMarsRover'
+import { createDir } from '../../src/rover/lander'
 
 describe('MarsRover', () => {
     const landingLocation = new MarsLocation(1, 1)
@@ -60,6 +47,39 @@ describe('MarsRover', () => {
             const marsCommand = RoverCommand.of('bbfb')
             rover.execute(marsCommand)
             expect(rover.location()).to.be.locationOf(landingLocation.nextTo('N').nextTo('N'))
+        })
+    })
+
+    describe('turning', () => {
+        describe('when turning, does not move', () => {
+            it('does nothing', () => {
+                const rover = new LandedMarsRover(landingLocation, createDir('N'))
+
+                const marsCommand = RoverCommand.of('l')
+                rover.execute(marsCommand)
+
+                expect(rover.location()).to.be.locationOf(landingLocation)
+            })
+
+            it('turning and moving forward is same as moving forward from different initial direction', () => {
+                const roverNorth = new LandedMarsRover(landingLocation, createDir('N'))
+                const roverWest = new LandedMarsRover(landingLocation, createDir('W'))
+
+                roverNorth.execute(RoverCommand.of('f'))
+                roverWest.execute(RoverCommand.of('lf'))
+
+                expect(roverNorth.location()).to.be.locationOf(roverWest.location())
+            })
+
+            it('turning and moving backwards is same as moving forward from different initial direction', () => {
+                const roverNorth = new LandedMarsRover(landingLocation, createDir('N'))
+                const roverEast = new LandedMarsRover(landingLocation, createDir('E'))
+
+                roverNorth.execute(RoverCommand.of('b'))
+                roverEast.execute(RoverCommand.of('rb'))
+
+                expect(roverNorth.location()).to.be.locationOf(roverEast.location())
+            })
         })
     })
 })
