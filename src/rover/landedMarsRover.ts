@@ -78,31 +78,26 @@ export class LandedMarsRover implements MarsRover {
 
     private reverse(commands: MarsSingleCommand[]) {
         for (const command of commands.reverse()) {
-            let newEvent: Event | undefined
-            if (command._type === 'B') {
-                newEvent = {
-                    _type: 'locationEvent',
-                    location: this.location().nextTo(this.direction()._type)!,
-                }
-            }
-            if (command._type === 'F') {
-                newEvent = {
-                    _type: 'locationEvent',
-                    location: this.location().nextTo(this.direction().oppositeDirection()._type)!,
-                }
-            }
-            if (command._type === 'L') {
-                newEvent = { _type: 'directionEvent', direction: this.direction().oppositeDirection().clockWise() }
-            }
-            if (command._type === 'R') {
-                newEvent = {
-                    _type: 'directionEvent',
-                    direction: this.direction().oppositeDirection().antiClockWise(),
-                }
-            }
-            if (newEvent) {
-                this.events.push(newEvent)
-            }
+            const newEvent: Event =
+                (command._type === 'B') ?
+                    {
+                        _type: 'locationEvent',
+                        location: this.location().nextTo(this.direction()._type)!,
+                    } :
+                    (command._type === 'F') ?
+                        {
+                            _type: 'locationEvent',
+                            location: this.location().nextTo(this.direction().oppositeDirection()._type)!,
+                        } :
+                        (command._type === 'L') ?
+                            {
+                                _type: 'directionEvent', direction: this.direction().oppositeDirection().clockWise(),
+                            } :
+                            {
+                                _type: 'directionEvent',
+                                direction: this.direction().oppositeDirection().antiClockWise(),
+                            }
+            this.events.push(newEvent)
         }
 
     }
