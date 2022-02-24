@@ -25,6 +25,7 @@ type Event = LocationEvent | DirectionEvent | BlockedEvent | UnknownCommand
 
 export class LandedMarsRover implements MarsRover {
     private readonly events: Event[] = []
+    private reverseCommands: Cmds[] | undefined
 
     public constructor(location: Location, direction: Dir, private readonly radar: Radar) {
         this.events = [{ _type: 'locationEvent', location }, { _type: 'directionEvent', direction }]
@@ -39,19 +40,36 @@ export class LandedMarsRover implements MarsRover {
 
             this.events.push(newEvent)
             if (newEvent._type === 'blockedEvent') {
-                this.reverse(commands)
+                this.reverseCommands = commands
                 return 'stop'
             }
             commands.push(cmd)
             return 'continue'
         })
+
+        if (this.reverseCommands) {
+            this.reverse(this.reverseCommands)
+            this.reverseCommands = undefined
+        }
+    }
+
+    public location(): Location {
+        function isLocation(x: Event): x is LocationEvent {
+            return x._type === 'locationEvent'
+        }
+        const locations: Location[] = this.events.filter(isLocation).map((it: LocationEvent) => it.location)
+        return locations[locations.length - 1]
+    }
+
+    public report(): Event[] {
+        return [...this.events]
     }
 
     private getEvent(cmd: 'F' | 'B' | 'L' | 'R'): Event {
         switch (cmd) {
         case 'B': {
             const nextLocation = this.location().nextTo(this.direction().oppositeDirection()._type)!
-            if (this.isObstacleOn2(this.location(), nextLocation)) {
+            if (this.isObstacleOn(this.location(), nextLocation, 1)) {
                 return { _type: 'blockedEvent', location: nextLocation }
             } else {
                 return {
@@ -62,7 +80,7 @@ export class LandedMarsRover implements MarsRover {
         }
         case 'F': {
             const nextLocation = this.location().nextTo(this.direction()._type)!
-            if (this.isObstacleOn2(this.location(), nextLocation)) {
+            if (this.isObstacleOn(this.location(), nextLocation, 1)) {
                 return { _type: 'blockedEvent', location: nextLocation }
             } else {
                 return {
@@ -81,19 +99,6 @@ export class LandedMarsRover implements MarsRover {
         default:
             return { _type: 'unknownCommand' }
         }
-    }
-
-    public location(): Location {
-        const locations: Location[] = this.events
-            .filter(it => it._type === 'locationEvent')
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            .map((it: LocationEvent) => it.location)
-        return locations[locations.length - 1]
-    }
-
-    public report(): Event[] {
-        return [...this.events]
     }
 
     private reverse(commands: Cmds[]) {
@@ -123,23 +128,18 @@ export class LandedMarsRover implements MarsRover {
     }
 
     private direction(): Dir {
-        const directions: Dir[] = this.events
-            .filter(it => it._type === 'directionEvent')
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            .map((it: DirectionEvent) => it.direction)
+        function isDirection(x: Event): x is DirectionEvent {
+            return x._type === 'directionEvent'
+        }
+        const directions: Dir[] = this.events.filter(isDirection).map((it: DirectionEvent) => it.direction)
         return directions[directions.length - 1]
     }
 
-    private isObstacleOn(loc: Location, dir: Directions) {
+    private isObstacleOn(loc: Location, nextLocation: Location, range: number) {
         const obstacles = this.radar.getObstacles(this.location())
-        const obstaclesInSight = obstacles.filter(o => o.loc.equals(loc.nextTo(dir)))
-        return obstaclesInSight.length === 1
-    }
-
-    private isObstacleOn2(loc: Location, loc2: Location) {
-        const obstacles = this.radar.getObstacles(this.location())
-        const obstaclesInSight = obstacles.filter(o => o.loc.equals(loc2))
+        const obstaclesInSight = obstacles.filter(
+            o => o.loc.equals(nextLocation) && o.loc.distanceFrom(nextLocation) <= range,
+        )
         return obstaclesInSight.length === 1
     }
 }
