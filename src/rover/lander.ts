@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import { Dir, Directions, Location, Planet, MarsRover, RoverLander } from '../interfaces'
+import { Dir, Directions, Location, MarsRover, Planet, RoverLander } from '../interfaces'
 import { matcher } from '../utils/matcher'
 import { Mars } from '../mars/planet'
 import { LandedMarsRover } from './landedMarsRover'
@@ -18,16 +18,15 @@ export class MarsRadar implements Radar {
     }
 
     public getObstacles(locationOfRadar: Location): Obstacle[] {
-        const closeBy = this.planet.obstacles
+        return this.planet.obstacles
             .map(it => ({ loc: it, range: it.distanceFrom(locationOfRadar) }))
             .filter(it => it.range < 3)
-        return closeBy
     }
 }
 
 export class MarsRoverLander implements RoverLander {
     public landOn(locationOn: Location, planet: Planet): MarsRover {
-        return new LandedMarsRover(locationOn, createDir('N'), new MarsRadar(planet))
+        return new LandedMarsRover(locationOn, createDir('N'), new MarsRadar(planet as Mars))
     }
 }
 

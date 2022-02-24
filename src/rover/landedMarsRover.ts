@@ -1,5 +1,4 @@
-import { Cmds, Command, Dir, Directions, Location, MarsRover, MarsSingleCommand } from '../interfaces'
-import { matcher } from '../utils/matcher'
+import { Cmds, Dir, Location, MarsRover } from '../interfaces'
 import { Radar } from './lander'
 
 interface DirectionEvent {
@@ -23,6 +22,12 @@ interface UnknownCommand {
 
 type Event = LocationEvent | DirectionEvent | BlockedEvent | UnknownCommand
 
+const availableCommands: Cmds[] = ['F', 'B', 'L', 'R']
+
+function assertStringIsValidCommands(x: string[]): x is Cmds[] {
+    return x.map(str => str.toUpperCase()).filter(it => !(availableCommands as string[]).includes(it)).length === 0
+}
+
 export class LandedMarsRover implements MarsRover {
     private readonly events: Event[] = []
     private reverseCommands: Cmds[] | undefined
@@ -31,21 +36,33 @@ export class LandedMarsRover implements MarsRover {
         this.events = [{ _type: 'locationEvent', location }, { _type: 'directionEvent', direction }]
     }
 
-    public execute(command: Command): void {
+    public execute(commandAsString: string): void {
+        const strings: string[] = commandAsString.split('').map(it => it.toUpperCase())
+        // This either has all valid commmands, or no commands at all.
+        const command = assertStringIsValidCommands(strings) ? strings : []
+
+        function* generator() {
+            for (const c of command) {
+                yield c
+            }
+        }
+
+        // generator goes through all the commands.
+        const gen = generator()
+
         const commands: Cmds[] = []
 
-        command.parse(cmd => {
-
+        for (const cmd of gen) {
             const newEvent = this.getEvent(cmd)
 
             this.events.push(newEvent)
             if (newEvent._type === 'blockedEvent') {
+                // set reverseCommands so that we know we actually need to reverse to original location
                 this.reverseCommands = commands
-                return 'stop'
+                break
             }
             commands.push(cmd)
-            return 'continue'
-        })
+        }
 
         if (this.reverseCommands) {
             this.reverse(this.reverseCommands)
@@ -57,6 +74,7 @@ export class LandedMarsRover implements MarsRover {
         function isLocation(x: Event): x is LocationEvent {
             return x._type === 'locationEvent'
         }
+
         const locations: Location[] = this.events.filter(isLocation).map((it: LocationEvent) => it.location)
         return locations[locations.length - 1]
     }
@@ -131,6 +149,7 @@ export class LandedMarsRover implements MarsRover {
         function isDirection(x: Event): x is DirectionEvent {
             return x._type === 'directionEvent'
         }
+
         const directions: Dir[] = this.events.filter(isDirection).map((it: DirectionEvent) => it.direction)
         return directions[directions.length - 1]
     }

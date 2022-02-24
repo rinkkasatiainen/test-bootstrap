@@ -3,7 +3,6 @@ import { Location, Planet } from '../../src/interfaces'
 import { MarsLocation } from '../../src/mars/location'
 import { Mars } from '../../src/mars/planet'
 import { MarsRoverLander } from '../../src/rover/lander'
-import { RoverCommand } from '../../src/rover/command'
 
 
 function aRandomLocationOn(mars: Planet): Location {
@@ -23,7 +22,7 @@ describe('Mars Rover', () => {
     it('Can move forward and back to original spot', () => {
         const rover = lander.landOn(locationOn, mars)
 
-        rover.execute(RoverCommand.of('ffbb'))
+        rover.execute('ffbb')
 
         expect(rover.location()).to.eql(locationOn)
     })
@@ -31,7 +30,7 @@ describe('Mars Rover', () => {
     it('can move in a circle', () => {
         const marsRover = lander.landOn(locationOn, mars)
 
-        marsRover.execute(RoverCommand.of('flflflf'))
+        marsRover.execute('flflflf')
 
         expect(marsRover.location()).to.be.locationOf(locationOn)
     })
@@ -44,7 +43,7 @@ describe('Mars Rover', () => {
             mars.addObstacle(locationOn.nextTo('N'))
             const rover = lander.landOn(locationOn, mars)
 
-            rover.execute(RoverCommand.of('ff'))
+            rover.execute('ff')
 
             expect(rover.location()).to.eql(locationOn)
         })
@@ -52,7 +51,7 @@ describe('Mars Rover', () => {
             mars.addObstacle(locationOn.nextTo('N').nextTo('E'))
             const rover = lander.landOn(locationOn, mars)
 
-            rover.execute(RoverCommand.of('flf'))
+            rover.execute('flf')
 
             expect(rover.report().map((it: unknown) => it._type)).to.eql([
                 'locationEvent', 'directionEvent',

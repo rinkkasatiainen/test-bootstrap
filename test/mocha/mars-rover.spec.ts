@@ -2,7 +2,6 @@ import { expect } from 'chai'
 
 import { Location } from '../../src/interfaces'
 import { MarsLocation } from '../../src/mars/location'
-import { RoverCommand } from '../../src/rover/command'
 import { LandedMarsRover } from '../../src/rover/landedMarsRover'
 import { createDir, MarsRadar, Obstacle, Radar } from '../../src/rover/lander'
 import { Mars } from '../../src/mars/planet'
@@ -25,7 +24,7 @@ describe('MarsRover', () => {
         it('does nothing', () => {
             const rover = createMarsRover(landingLocation, createDir('N'))
 
-            const marsCommand = RoverCommand.of('ffx')
+            const marsCommand = 'ffx'
             rover.execute(marsCommand)
 
             expect(rover.location()).to.be.locationOf(landingLocation)
@@ -36,7 +35,7 @@ describe('MarsRover', () => {
         it('can take commands', () => {
             const rover = createMarsRover(landingLocation, createDir('N'))
 
-            const marsCommand = RoverCommand.of('f')
+            const marsCommand = 'f'
             rover.execute(marsCommand)
 
             expect(rover.location()).to.be.locationOf(landingLocation.nextTo('N'))
@@ -44,14 +43,14 @@ describe('MarsRover', () => {
 
         it('can take multiple commands', () => {
             const rover = createMarsRover(landingLocation, createDir('W'))
-            const marsCommand = RoverCommand.of('ff')
+            const marsCommand = 'ff'
             rover.execute(marsCommand)
             expect(rover.location()).to.be.locationOf(landingLocation.nextTo('W').nextTo('W'))
         })
 
         it('can go backwards, too', () => {
             const rover = createMarsRover(landingLocation, createDir('S'))
-            const marsCommand = RoverCommand.of('bbfb')
+            const marsCommand = 'bbfb'
             rover.execute(marsCommand)
             expect(rover.location()).to.be.locationOf(landingLocation.nextTo('N').nextTo('N'))
         })
@@ -62,7 +61,7 @@ describe('MarsRover', () => {
             it('does nothing', () => {
                 const rover = createMarsRover(landingLocation, createDir('N'))
 
-                const marsCommand = RoverCommand.of('l')
+                const marsCommand = 'l'
                 rover.execute(marsCommand)
 
                 expect(rover.location()).to.be.locationOf(landingLocation)
@@ -72,8 +71,8 @@ describe('MarsRover', () => {
                 const roverNorth = createMarsRover(landingLocation, createDir('N'))
                 const roverWest = createMarsRover(landingLocation, createDir('W'))
 
-                roverNorth.execute(RoverCommand.of('f'))
-                roverWest.execute(RoverCommand.of('lf'))
+                roverNorth.execute('f')
+                roverWest.execute('lf')
 
                 expect(roverNorth.location()).to.be.locationOf(roverWest.location())
             })
@@ -82,8 +81,8 @@ describe('MarsRover', () => {
                 const roverNorth = createMarsRover(landingLocation, createDir('N'))
                 const roverEast = createMarsRover(landingLocation, createDir('E'))
 
-                roverNorth.execute(RoverCommand.of('b'))
-                roverEast.execute(RoverCommand.of('rb'))
+                roverNorth.execute('b')
+                roverEast.execute('rb')
 
                 expect(roverNorth.location()).to.be.locationOf(roverEast.location())
             })
@@ -94,7 +93,7 @@ describe('MarsRover', () => {
         it('can move in a circle', () => {
             const marsRover = createMarsRover(landingLocation)
 
-            marsRover.execute(RoverCommand.of('flflflf'))
+            marsRover.execute('flflflf')
 
             expect(marsRover.location()).to.be.locationOf(landingLocation)
         })
@@ -107,7 +106,7 @@ describe('MarsRover', () => {
             }
             const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
 
-            marsRover.execute(RoverCommand.of('fff'))
+            marsRover.execute('fff')
 
             expect(marsRover.location()).to.be.locationOf(landingLocation)
         })
@@ -118,7 +117,7 @@ describe('MarsRover', () => {
             }
             const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
 
-            marsRover.execute(RoverCommand.of('b'))
+            marsRover.execute('b')
 
             expect(marsRover.location()).to.be.locationOf(landingLocation)
         })
@@ -128,7 +127,7 @@ describe('MarsRover', () => {
         it('logs location and direction events', () => {
             const marsRover = createMarsRover(landingLocation)
 
-            marsRover.execute(RoverCommand.of('flflflf'))
+            marsRover.execute('flflflf')
 
             expect(marsRover.report().map(e => e._type)).to.eql([
                 'locationEvent', 'directionEvent',
@@ -146,7 +145,7 @@ describe('MarsRover', () => {
             }
             const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
 
-            marsRover.execute(RoverCommand.of('fff'))
+            marsRover.execute('fff')
 
             expect(marsRover.report().map(e => e._type)).to.eql([
                 'locationEvent', 'directionEvent', 'blockedEvent',
@@ -181,7 +180,7 @@ describe('MarsRover', () => {
                 getObstacles: (x: Location) => next.next(x).value,
             }
             const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
-            marsRover.execute(RoverCommand.of('ff'))
+            marsRover.execute('ff')
             // TODO: Should move back.
             expect(marsRover.location()).to.be.locationOf(landingLocation)
         })
@@ -194,7 +193,7 @@ describe('MarsRover', () => {
             }
             const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
 
-            marsRover.execute(RoverCommand.of('fff'))
+            marsRover.execute('fff')
 
             expect(marsRover.report().map(e => e._type)).to.eql([
                 'locationEvent', 'directionEvent',

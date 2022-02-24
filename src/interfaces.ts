@@ -19,7 +19,7 @@ export interface Command {
 }
 
 export interface MarsRover {
-    execute(command: Command): void;
+    execute(command: string): void;
 
     location(): Location;
 
