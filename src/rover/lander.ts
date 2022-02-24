@@ -4,7 +4,7 @@ import { matcher } from '../utils/matcher'
 import { Mars } from '../mars/planet'
 import { LandedMarsRover } from './landedMarsRover'
 
-interface Obstacle {
+export interface Obstacle {
     loc: Location;
     range: number;
 }

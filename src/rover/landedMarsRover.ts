@@ -27,8 +27,9 @@ export class LandedMarsRover implements MarsRover {
     }
 
     public execute(command: Command): void {
-        command.parse(cmd => {
+        const commands: MarsSingleCommand[] = []
 
+        command.parse(cmd => {
             const event: Event = matcher<Cmds, MarsSingleCommand, Event>({
                 B: (shape) => {
                     if (this.isObstacleOn(this.location(), this.direction().oppositeDirection()._type)) {
@@ -53,7 +54,35 @@ export class LandedMarsRover implements MarsRover {
                 R: shape => ({ _type: 'directionEvent', direction: this.direction().antiClockWise() }),
             })(cmd)
             this.events.push(event)
+            if (event._type === 'blockedEvent') {
+                this.reverse(commands)
+                return 'stop'
+            }
+            commands.push(cmd)
+            return 'continue'
         })
+    }
+
+    private reverse(commands: MarsSingleCommand[]) {
+        for (const command of commands.reverse()) {
+            const event = matcher<Cmds, MarsSingleCommand, Event>({
+                B: (shape) => ({
+                    _type: 'locationEvent',
+                    location: this.location().nextTo(this.direction()._type),
+                }),
+                F: (shape) => ({
+                    _type: 'locationEvent',
+                    location: this.location().nextTo(this.direction().oppositeDirection()._type),
+                }),
+                L: shape => ({ _type: 'directionEvent', direction: this.direction().oppositeDirection().clockWise() }),
+                R: shape => ({
+                    _type: 'directionEvent',
+                    direction: this.direction().oppositeDirection().antiClockWise(),
+                }),
+            })(command)
+            this.events.push(event)
+        }
+
     }
 
     public location(): Location {
@@ -63,6 +92,10 @@ export class LandedMarsRover implements MarsRover {
             // @ts-ignore
             .map((it: LocationEvent) => it.location)
         return locations[locations.length - 1]
+    }
+
+    public report(): Event[] {
+        return [...this.events]
     }
 
     private direction(): Dir {

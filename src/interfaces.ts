@@ -14,13 +14,15 @@ export type MarsSingleCommand = Forward | Backward | TurnLeft | TurnRight
 export type Cmds = MarsSingleCommand['_type']
 
 export interface Command {
-    parse(param: (cmd: MarsSingleCommand) => void): void;
+    parse(param: (cmd: MarsSingleCommand) => 'stop' | 'continue'): void;
 }
 
 export interface MarsRover {
     execute(command: Command): void;
 
     location(): Location;
+
+    report(): unknown[];
 }
 
 export interface RoverLander {

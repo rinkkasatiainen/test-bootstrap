@@ -41,7 +41,6 @@ describe('Mars Rover', () => {
 
     describe('when sees obstacles', () => {
         it('does not move if obstacle straight ahead', () => {
-
             mars.addObstacle(locationOn.nextTo('N'))
             const rover = lander.landOn(locationOn, mars)
 
@@ -49,6 +48,22 @@ describe('Mars Rover', () => {
 
             expect(rover.location()).to.eql(locationOn)
         })
-        it('goes back to origial spot after obstacle')
+        it('goes back to origial spot after obstacle', () => {
+            mars.addObstacle(locationOn.nextTo('N').nextTo('E'))
+            const rover = lander.landOn(locationOn, mars)
+
+            rover.execute(RoverCommand.of('flf'))
+
+            expect(rover.report().map((it: unknown) => it._type)).to.eql([
+                'locationEvent', 'directionEvent',
+                'locationEvent',
+                'directionEvent',
+                'blockedEvent',
+                'directionEvent',
+                'locationEvent',
+            ])
+
+            expect(rover.location()).to.eql(locationOn)
+        })
     })
 })

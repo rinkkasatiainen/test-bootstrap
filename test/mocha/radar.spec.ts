@@ -4,13 +4,7 @@ import { Location } from '../../src/interfaces'
 import { Mars } from '../../src/mars/planet'
 import { MarsLocation } from '../../src/mars/location'
 import { MarsRadar } from '../../src/rover/lander'
-
-const times: (x: number) => <A, B>(f: (x: A) => B) => (orig: A) => B = n => <A, B>(f: (x: A) => B) => first => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const result: B = Array(n).fill('').reduce((carry) => f(carry), first)
-
-    return result
-}
+import { times } from '../utils/times'
 
 describe('MarsRadar', () => {
     const location = new MarsLocation(10, 10)
