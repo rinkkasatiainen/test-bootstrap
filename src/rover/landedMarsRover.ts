@@ -17,7 +17,11 @@ interface BlockedEvent {
     location: Location;
 }
 
-type Event = LocationEvent | DirectionEvent | BlockedEvent
+interface UnknownCommand {
+    _type: 'unknownCommand';
+}
+
+type Event = LocationEvent | DirectionEvent | BlockedEvent | UnknownCommand
 
 export class LandedMarsRover implements MarsRover {
     private readonly events: Event[] = []
@@ -27,40 +31,56 @@ export class LandedMarsRover implements MarsRover {
     }
 
     public execute(command: Command): void {
-        const commands: MarsSingleCommand[] = []
+        const commands: Cmds[] = []
 
         command.parse(cmd => {
-            const event: Event = matcher<Cmds, MarsSingleCommand, Event>({
-                B: (shape) => {
-                    if (this.isObstacleOn(this.location(), this.direction().oppositeDirection()._type)) {
-                        const blockOn = this.location().nextTo(this.direction().oppositeDirection()._type)!
-                        return ({ _type: 'blockedEvent', location: blockOn })// do nothing
-                    } else {
-                        return ({
-                            _type: 'locationEvent',
-                            location: this.location().nextTo(this.direction().oppositeDirection()._type)!,
-                        })
-                    }
-                },
-                F: (shape) => {
-                    if (this.isObstacleOn(this.location(), this.direction()._type)) {
-                        const blockOn = this.location().nextTo(this.direction()._type)!
-                        return ({ _type: 'blockedEvent', location: blockOn })// do nothing
-                    } else {
-                        return ({ _type: 'locationEvent', location: this.location().nextTo(this.direction()._type)! })
-                    }
-                },
-                L: shape => ({ _type: 'directionEvent', direction: this.direction().clockWise() }),
-                R: shape => ({ _type: 'directionEvent', direction: this.direction().antiClockWise() }),
-            })(cmd)
-            this.events.push(event)
-            if (event._type === 'blockedEvent') {
+
+            const newEvent = this.getEvent(cmd)
+
+            this.events.push(newEvent)
+            if (newEvent._type === 'blockedEvent') {
                 this.reverse(commands)
                 return 'stop'
             }
             commands.push(cmd)
             return 'continue'
         })
+    }
+
+    private getEvent(cmd: 'F' | 'B' | 'L' | 'R'): Event {
+        switch (cmd) {
+        case 'B': {
+            const nextLocation = this.location().nextTo(this.direction().oppositeDirection()._type)!
+            if (this.isObstacleOn2(this.location(), nextLocation)) {
+                return { _type: 'blockedEvent', location: nextLocation }
+            } else {
+                return {
+                    _type: 'locationEvent',
+                    location: this.location().nextTo(this.direction().oppositeDirection()._type)!,
+                }
+            }
+        }
+        case 'F': {
+            const nextLocation = this.location().nextTo(this.direction()._type)!
+            if (this.isObstacleOn2(this.location(), nextLocation)) {
+                return { _type: 'blockedEvent', location: nextLocation }
+            } else {
+                return {
+                    _type: 'locationEvent',
+                    location: this.location().nextTo(this.direction()._type)!,
+                }
+            }
+        }
+        case 'L': {
+            return { _type: 'directionEvent', direction: this.direction().clockWise() }
+        }
+        case 'R': {
+            return { _type: 'directionEvent', direction: this.direction().antiClockWise() }
+
+        }
+        default:
+            return { _type: 'unknownCommand' }
+        }
     }
 
     public location(): Location {
@@ -76,20 +96,20 @@ export class LandedMarsRover implements MarsRover {
         return [...this.events]
     }
 
-    private reverse(commands: MarsSingleCommand[]) {
+    private reverse(commands: Cmds[]) {
         for (const command of commands.reverse()) {
             const newEvent: Event =
-                (command._type === 'B') ?
+                (command === 'B') ?
                     {
                         _type: 'locationEvent',
                         location: this.location().nextTo(this.direction()._type)!,
                     } :
-                    (command._type === 'F') ?
+                    (command === 'F') ?
                         {
                             _type: 'locationEvent',
                             location: this.location().nextTo(this.direction().oppositeDirection()._type)!,
                         } :
-                        (command._type === 'L') ?
+                        (command === 'L') ?
                             {
                                 _type: 'directionEvent', direction: this.direction().oppositeDirection().clockWise(),
                             } :
@@ -114,6 +134,12 @@ export class LandedMarsRover implements MarsRover {
     private isObstacleOn(loc: Location, dir: Directions) {
         const obstacles = this.radar.getObstacles(this.location())
         const obstaclesInSight = obstacles.filter(o => o.loc.equals(loc.nextTo(dir)))
+        return obstaclesInSight.length === 1
+    }
+
+    private isObstacleOn2(loc: Location, loc2: Location) {
+        const obstacles = this.radar.getObstacles(this.location())
+        const obstaclesInSight = obstacles.filter(o => o.loc.equals(loc2))
         return obstaclesInSight.length === 1
     }
 }

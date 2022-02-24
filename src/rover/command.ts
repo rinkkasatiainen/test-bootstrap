@@ -1,11 +1,6 @@
-import { Cmds, Command, MarsSingleCommand } from '../interfaces'
+import { Cmds, Command } from '../interfaces'
 
-const t = ['f', 'b', 'l', 'r']
-const T = t.map(str => str.toUpperCase())
-
-function assertX(x: string[]): x is Cmds[] {
-    return x.map(str => str.toUpperCase()).filter(it => !T.includes(it)).length === 0
-}
+const t: Cmds[] = ['F', 'B', 'L', 'R']
 
 export class RoverCommand implements Command {
     private gen: Generator<Cmds>
@@ -23,15 +18,19 @@ export class RoverCommand implements Command {
 
     public static of(cmd: string) {
         const strings: string[] = cmd.split('').map(it => it.toUpperCase())
-        if (assertX(strings)) {
+
+        function assertStringIsValidCommands(x: string[]): x is Cmds[] {
+            return x.map(str => str.toUpperCase()).filter(it => !(t as string[]).includes(it)).length === 0
+        }
+
+        if (assertStringIsValidCommands(strings)) {
             return new RoverCommand(strings)
         }
         return new RoverCommand([])
     }
 
-    public parse(callback: (cmd: MarsSingleCommand) => 'stop' | 'continue'): void {
-        for (const genElement of this.gen) {
-            const cmd: MarsSingleCommand = { _type: genElement }
+    public parse(callback: (cmd: Cmds) => 'stop' | 'continue'): void {
+        for (const cmd of this.gen) {
             const result = callback(cmd)
             if (result === 'stop') {
                 return
@@ -39,3 +38,4 @@ export class RoverCommand implements Command {
         }
     }
 }
+

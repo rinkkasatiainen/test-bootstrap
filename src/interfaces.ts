@@ -4,17 +4,18 @@ export interface Planet {
     addObstacle(location: Location): void
 }
 
-export type Forward = PatternMatchingType<'F'>
-export type Backward = PatternMatchingType<'B'>
-export type TurnLeft = PatternMatchingType<'L'>
-export type TurnRight = PatternMatchingType<'R'>
+interface RoverSingleCommand<X> {cmd: X}
+export type Forward = RoverSingleCommand<'F'>
+export type Backward = RoverSingleCommand<'B'>
+export type TurnLeft = RoverSingleCommand<'L'>
+export type TurnRight = RoverSingleCommand<'R'>
 
 
 export type MarsSingleCommand = Forward | Backward | TurnLeft | TurnRight
-export type Cmds = MarsSingleCommand['_type']
+export type Cmds = MarsSingleCommand['cmd']
 
 export interface Command {
-    parse(param: (cmd: MarsSingleCommand) => 'stop' | 'continue'): void;
+    parse(param: (cmd: Cmds) => 'stop' | 'continue'): void;
 }
 
 export interface MarsRover {
