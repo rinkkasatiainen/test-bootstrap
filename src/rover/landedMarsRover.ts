@@ -33,21 +33,21 @@ export class LandedMarsRover implements MarsRover {
             const event: Event = matcher<Cmds, MarsSingleCommand, Event>({
                 B: (shape) => {
                     if (this.isObstacleOn(this.location(), this.direction().oppositeDirection()._type)) {
-                        const blockOn = this.location().nextTo(this.direction().oppositeDirection()._type)
+                        const blockOn = this.location().nextTo(this.direction().oppositeDirection()._type)!
                         return ({ _type: 'blockedEvent', location: blockOn })// do nothing
                     } else {
                         return ({
                             _type: 'locationEvent',
-                            location: this.location().nextTo(this.direction().oppositeDirection()._type),
+                            location: this.location().nextTo(this.direction().oppositeDirection()._type)!,
                         })
                     }
                 },
                 F: (shape) => {
                     if (this.isObstacleOn(this.location(), this.direction()._type)) {
-                        const blockOn = this.location().nextTo(this.direction()._type)
+                        const blockOn = this.location().nextTo(this.direction()._type)!
                         return ({ _type: 'blockedEvent', location: blockOn })// do nothing
                     } else {
-                        return ({ _type: 'locationEvent', location: this.location().nextTo(this.direction()._type) })
+                        return ({ _type: 'locationEvent', location: this.location().nextTo(this.direction()._type)! })
                     }
                 },
                 L: shape => ({ _type: 'directionEvent', direction: this.direction().clockWise() }),
@@ -63,28 +63,6 @@ export class LandedMarsRover implements MarsRover {
         })
     }
 
-    private reverse(commands: MarsSingleCommand[]) {
-        for (const command of commands.reverse()) {
-            const event = matcher<Cmds, MarsSingleCommand, Event>({
-                B: (shape) => ({
-                    _type: 'locationEvent',
-                    location: this.location().nextTo(this.direction()._type),
-                }),
-                F: (shape) => ({
-                    _type: 'locationEvent',
-                    location: this.location().nextTo(this.direction().oppositeDirection()._type),
-                }),
-                L: shape => ({ _type: 'directionEvent', direction: this.direction().oppositeDirection().clockWise() }),
-                R: shape => ({
-                    _type: 'directionEvent',
-                    direction: this.direction().oppositeDirection().antiClockWise(),
-                }),
-            })(command)
-            this.events.push(event)
-        }
-
-    }
-
     public location(): Location {
         const locations: Location[] = this.events
             .filter(it => it._type === 'locationEvent')
@@ -96,6 +74,28 @@ export class LandedMarsRover implements MarsRover {
 
     public report(): Event[] {
         return [...this.events]
+    }
+
+    private reverse(commands: MarsSingleCommand[]) {
+        for (const command of commands.reverse()) {
+            const event = matcher<Cmds, MarsSingleCommand, Event>({
+                B: (shape) => ({
+                    _type: 'locationEvent',
+                    location: this.location().nextTo(this.direction()._type)!,
+                }),
+                F: (shape) => ({
+                    _type: 'locationEvent',
+                    location: this.location().nextTo(this.direction().oppositeDirection()._type)!,
+                }),
+                L: shape => ({ _type: 'directionEvent', direction: this.direction().oppositeDirection().clockWise() }),
+                R: shape => ({
+                    _type: 'directionEvent',
+                    direction: this.direction().oppositeDirection().antiClockWise(),
+                }),
+            })(command)
+            this.events.push(event)
+        }
+
     }
 
     private direction(): Dir {

@@ -38,7 +38,7 @@ export interface Dir extends PatternMatchingType<Directions>{
 export interface Location {
     equals: (other: Location) => boolean;
 
-    nextTo(direction: Directions): Location;
+    nextTo(direction: Directions): Location | undefined;
 
     distanceFrom(locationOfRadar: Location): number
 }

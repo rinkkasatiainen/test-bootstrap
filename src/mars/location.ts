@@ -1,17 +1,4 @@
 import { Directions, Location } from '../interfaces'
-import { matcher, PatternMatchingType } from '../utils/matcher'
-
-
-interface Point {
-    lat: number;
-    lon: number;
-}
-type DirectionOf<K extends Directions> = PatternMatchingType<K> & Point
-type North = DirectionOf<'N'>
-type East = DirectionOf<'E'>
-type South = DirectionOf<'S'>
-type West = DirectionOf<'W'>
-type Direction = North | East | South | West
 
 const decreaseByOne = (x: number) => {
     const res = x - 1
@@ -24,10 +11,7 @@ const increaseByOne = (x: number) => {
 }
 
 export class MarsLocation implements Location {
-    private readonly c: Point
-
-    public constructor(private readonly lat: number, private readonly lon: number) {
-        this.c = { lat, lon }
+    public constructor(private lat: number, private lon: number) {
     }
 
     public equals(other: Location): boolean {
@@ -36,17 +20,25 @@ export class MarsLocation implements Location {
             other.lon === this.lon && true
     }
 
-    public nextTo(direction: Directions): Location {
-        return matcher<Directions, Direction, Location>({
-            N: shape => new MarsLocation(decreaseByOne(shape.lat), shape.lon),
-            E: shape => new MarsLocation(shape.lat, increaseByOne(shape.lon)),
-            S: shape => new MarsLocation(increaseByOne(shape.lat), shape.lon),
-            W: shape => new MarsLocation(shape.lat, decreaseByOne(shape.lon)),
-        })({ ...this.c, _type: direction })
+    public nextTo(direction: Directions): Location | undefined {
+        if( direction === 'N'){
+            return new MarsLocation(decreaseByOne(this.lat), this.lon)
+        }
+        if( direction === 'E'){
+            return new MarsLocation(this.lat, increaseByOne(this.lon))
+        }
+        if( direction === 'S'){
+            return new MarsLocation(increaseByOne(this.lat), this.lon)
+        }
+        if( direction === 'W'){
+            return new MarsLocation(this.lat, decreaseByOne(this.lon))
+        }
+        return
     }
 
     public distanceFrom(other: Location): number {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        return Math.abs(other.c.lat - this.c.lat) + Math.abs(other.c.lon - this.c.lon) ;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return Math.abs(other.lat - this.lat) + Math.abs(other.lon - this.lon) ;
     }
 }
