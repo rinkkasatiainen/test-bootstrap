@@ -7,22 +7,28 @@ import { createDir, MarsRadar, Obstacle, Radar } from '../../src/rover/lander'
 import { Mars } from '../../src/mars/planet'
 import { times } from '../utils/times'
 
-function createMarsRover(landingLocation: MarsLocation, dir = createDir('S')) {
-    return new LandedMarsRover(landingLocation, dir, new MarsRadar(new Mars()))
-}
 
 describe('MarsRover', () => {
-    const landingLocation = new MarsLocation(1, 1)
+    let landingLocation: MarsLocation
+    let mars: Mars
+    beforeEach(() => {
+
+        mars = new Mars()
+        landingLocation = new MarsLocation(1, 1, mars)
+    })
+    function createMarsRover(l: MarsLocation, dir = createDir('S', mars)) {
+        return new LandedMarsRover(l, dir, new MarsRadar(mars))
+    }
 
     it('has a location', () => {
-        const rover = createMarsRover(landingLocation, createDir('N'))
+        const rover = createMarsRover(landingLocation, createDir('N', mars))
 
         expect(rover.location()).to.be.locationOf(landingLocation)
     })
 
     describe('given wrong commands', () => {
         it('does nothing', () => {
-            const rover = createMarsRover(landingLocation, createDir('N'))
+            const rover = createMarsRover(landingLocation, createDir('N', mars))
 
             const marsCommand = 'ffx'
             rover.execute(marsCommand)
@@ -33,33 +39,33 @@ describe('MarsRover', () => {
 
     describe('going forward', () => {
         it('can take commands', () => {
-            const rover = createMarsRover(landingLocation, createDir('N'))
+            const rover = createMarsRover(landingLocation, createDir('N', mars))
 
             const marsCommand = 'f'
             rover.execute(marsCommand)
 
-            expect(rover.location()).to.be.locationOf(landingLocation.nextTo('N'))
+            expect(rover.location()).to.be.locationOf(landingLocation.nextTo('N')!)
         })
 
         it('can take multiple commands', () => {
-            const rover = createMarsRover(landingLocation, createDir('W'))
+            const rover = createMarsRover(landingLocation, createDir('W', mars))
             const marsCommand = 'ff'
             rover.execute(marsCommand)
-            expect(rover.location()).to.be.locationOf(landingLocation.nextTo('W').nextTo('W'))
+            expect(rover.location()).to.be.locationOf(landingLocation.nextTo('W')!.nextTo('W')!)
         })
 
         it('can go backwards, too', () => {
-            const rover = createMarsRover(landingLocation, createDir('S'))
+            const rover = createMarsRover(landingLocation, createDir('S', mars))
             const marsCommand = 'bbfb'
             rover.execute(marsCommand)
-            expect(rover.location()).to.be.locationOf(landingLocation.nextTo('N').nextTo('N'))
+            expect(rover.location()).to.be.locationOf(landingLocation.nextTo('N')!.nextTo('N')!)
         })
     })
 
     describe('turning', () => {
         describe('when turning, does not move', () => {
             it('does nothing', () => {
-                const rover = createMarsRover(landingLocation, createDir('N'))
+                const rover = createMarsRover(landingLocation, createDir('N', mars))
 
                 const marsCommand = 'l'
                 rover.execute(marsCommand)
@@ -68,8 +74,8 @@ describe('MarsRover', () => {
             })
 
             it('turning and moving forward is same as moving forward from different initial direction', () => {
-                const roverNorth = createMarsRover(landingLocation, createDir('N'))
-                const roverWest = createMarsRover(landingLocation, createDir('W'))
+                const roverNorth = createMarsRover(landingLocation, createDir('N', mars))
+                const roverWest = createMarsRover(landingLocation, createDir('W', mars))
 
                 roverNorth.execute('f')
                 roverWest.execute('lf')
@@ -78,8 +84,8 @@ describe('MarsRover', () => {
             })
 
             it('turning and moving backwards is same as moving forward from different initial direction', () => {
-                const roverNorth = createMarsRover(landingLocation, createDir('N'))
-                const roverEast = createMarsRover(landingLocation, createDir('E'))
+                const roverNorth = createMarsRover(landingLocation, createDir('N', mars))
+                const roverEast = createMarsRover(landingLocation, createDir('E', mars))
 
                 roverNorth.execute('b')
                 roverEast.execute('rb')
@@ -104,7 +110,7 @@ describe('MarsRover', () => {
             const fakeRadar: Radar = {
                 getObstacles: (x: Location) => [{ loc: landingLocation.nextTo('N'), range: 1 }],
             }
-            const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
+            const marsRover = new LandedMarsRover(landingLocation, createDir('N', mars), fakeRadar)
 
             marsRover.execute('fff')
 
@@ -115,7 +121,7 @@ describe('MarsRover', () => {
             const fakeRadar: Radar = {
                 getObstacles: (x: Location) => [{ loc: landingLocation.nextTo('S'), range: 1 }],
             }
-            const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
+            const marsRover = new LandedMarsRover(landingLocation, createDir('N', mars), fakeRadar)
 
             marsRover.execute('b')
 
@@ -143,7 +149,7 @@ describe('MarsRover', () => {
             const fakeRadar: Radar = {
                 getObstacles: (x: Location) => [{ loc: landingLocation.nextTo('N'), range: 1 }],
             }
-            const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
+            const marsRover = new LandedMarsRover(landingLocation, createDir('N', mars), fakeRadar)
 
             marsRover.execute('fff')
 
@@ -179,7 +185,7 @@ describe('MarsRover', () => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 getObstacles: (x: Location) => next.next(x).value,
             }
-            const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
+            const marsRover = new LandedMarsRover(landingLocation, createDir('N', mars), fakeRadar)
             marsRover.execute('ff')
             // TODO: Should move back.
             expect(marsRover.location()).to.be.locationOf(landingLocation)
@@ -191,7 +197,7 @@ describe('MarsRover', () => {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
                 getObstacles: (x: Location) => next.next(x).value,
             }
-            const marsRover = new LandedMarsRover(landingLocation, createDir('N'), fakeRadar)
+            const marsRover = new LandedMarsRover(landingLocation, createDir('N', mars), fakeRadar)
 
             marsRover.execute('fff')
 

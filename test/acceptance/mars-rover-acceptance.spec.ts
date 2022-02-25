@@ -1,16 +1,16 @@
 import { expect } from 'chai'
-import { Location, Planet } from '../../src/interfaces'
+import { Location, } from '../../src/interfaces'
 import { MarsLocation } from '../../src/mars/location'
 import { Mars } from '../../src/mars/planet'
 import { MarsRoverLander } from '../../src/rover/lander'
 
 
-function aRandomLocationOn(mars: Planet): Location {
-    return new MarsLocation(Math.floor(Math.random() * 180), Math.floor(Math.random() * 180))
+function aRandomLocationOn(mars: Mars): Location {
+    return new MarsLocation(Math.floor(Math.random() * 180), Math.floor(Math.random() * 180), mars)
 }
 
 describe('Mars Rover', () => {
-    let mars: Planet
+    let mars: Mars
     let locationOn: Location
     let lander: MarsRoverLander
 

@@ -1,7 +1,8 @@
 import { PatternMatchingType } from './utils/matcher'
+import { Mars } from './mars/planet'
 
 export interface Planet {
-    addObstacle(location: Location): void
+    addObstacle(location: Location): void;
 }
 
 interface RoverSingleCommand<X> {cmd: X}
@@ -14,10 +15,6 @@ export type TurnRight = RoverSingleCommand<'R'>
 export type MarsSingleCommand = Forward | Backward | TurnLeft | TurnRight
 export type Cmds = MarsSingleCommand['cmd']
 
-export interface Command {
-    parse(param: (cmd: Cmds) => 'stop' | 'continue'): void;
-}
-
 export interface MarsRover {
     execute(command: string): void;
 
@@ -27,11 +24,12 @@ export interface MarsRover {
 }
 
 export interface RoverLander {
-    landOn: (locationOn: Location, planet: Planet) => MarsRover;
+    landOn: (locationOn: Location, planet: Mars) => MarsRover;
 }
 
 export type Directions = 'N' | 'S' | 'E' | 'W'
-export interface Dir extends PatternMatchingType<Directions>{
+export interface Dir{
+    goingTo: Directions;
     oppositeDirection: () => Dir;
     clockWise: () => Dir;
     antiClockWise: () => Dir;
@@ -39,7 +37,7 @@ export interface Dir extends PatternMatchingType<Directions>{
 export interface Location {
     equals: (other: Location) => boolean;
 
-    nextTo(direction: Directions): Location | undefined;
+    nextTo(direction: Directions): Location;
 
-    distanceFrom(locationOfRadar: Location): number
+    distanceFrom(locationOfRadar: Location): number;
 }

@@ -7,10 +7,11 @@ import { MarsRadar } from '../../src/rover/lander'
 import { times } from '../utils/times'
 
 describe('MarsRadar', () => {
-    const location = new MarsLocation(10, 10)
     let planet: Mars
+    let location: MarsLocation
     beforeEach(() => {
         planet = new Mars()
+        location = new MarsLocation(10, 10, planet)
     })
     describe('finds All nearby obstacles', () => {
         it('to North', () => {
@@ -38,7 +39,7 @@ describe('MarsRadar', () => {
 
             const result = new MarsRadar(planet).getObstacles(location)
 
-            expect(result).to.eql([{ loc: location.nextTo('W').nextTo('W'), range: 2}])
+            expect(result).to.eql([{ loc: location.nextTo('W').nextTo('W'), range: 2 }])
         })
 
         it('does find from SE ', () => {
@@ -46,7 +47,7 @@ describe('MarsRadar', () => {
 
             const result = new MarsRadar(planet).getObstacles(location)
 
-            expect(result).to.eql([{ loc: location.nextTo('E').nextTo('S'), range: 2}])
+            expect(result).to.eql([{ loc: location.nextTo('E').nextTo('S'), range: 2 }])
         })
     })
 })

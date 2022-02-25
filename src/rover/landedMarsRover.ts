@@ -86,24 +86,24 @@ export class LandedMarsRover implements MarsRover {
     private getEvent(cmd: 'F' | 'B' | 'L' | 'R'): Event {
         switch (cmd) {
         case 'B': {
-            const nextLocation = this.location().nextTo(this.direction().oppositeDirection()._type)!
+            const nextLocation = this.location().nextTo(this.direction().oppositeDirection().goingTo)!
             if (this.isObstacleOn(this.location(), nextLocation, 1)) {
                 return { _type: 'blockedEvent', location: nextLocation }
             } else {
                 return {
                     _type: 'locationEvent',
-                    location: this.location().nextTo(this.direction().oppositeDirection()._type)!,
+                    location: this.location().nextTo(this.direction().oppositeDirection().goingTo)!,
                 }
             }
         }
         case 'F': {
-            const nextLocation = this.location().nextTo(this.direction()._type)!
+            const nextLocation = this.location().nextTo(this.direction().goingTo)!
             if (this.isObstacleOn(this.location(), nextLocation, 1)) {
                 return { _type: 'blockedEvent', location: nextLocation }
             } else {
                 return {
                     _type: 'locationEvent',
-                    location: this.location().nextTo(this.direction()._type)!,
+                    location: this.location().nextTo(this.direction().goingTo)!,
                 }
             }
         }
@@ -121,16 +121,17 @@ export class LandedMarsRover implements MarsRover {
 
     private reverse(commands: Cmds[]) {
         for (const command of commands.reverse()) {
+            this.direction().goingTo /*?*/
             const newEvent: Event =
                 (command === 'B') ?
                     {
                         _type: 'locationEvent',
-                        location: this.location().nextTo(this.direction()._type)!,
+                        location: this.location().nextTo(this.direction().goingTo)!,
                     } :
                     (command === 'F') ?
                         {
                             _type: 'locationEvent',
-                            location: this.location().nextTo(this.direction().oppositeDirection()._type)!,
+                            location: this.location().nextTo(this.direction().oppositeDirection().goingTo)!,
                         } :
                         (command === 'L') ?
                             {

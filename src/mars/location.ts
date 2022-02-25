@@ -1,4 +1,5 @@
 import { Directions, Location } from '../interfaces'
+import { Mars } from './planet'
 
 const decreaseByOne = (x: number) => {
     const res = x - 1
@@ -11,34 +12,33 @@ const increaseByOne = (x: number) => {
 }
 
 export class MarsLocation implements Location {
-    public constructor(private lat: number, private lon: number) {
+    public constructor(public readonly lat: number, public readonly lon: number, private readonly mars: Mars) {
     }
 
     public equals(other: Location): boolean {
         return other instanceof MarsLocation &&
             other.lat === this.lat &&
-            other.lon === this.lon && true
+            other.lon === this.lon
     }
 
-    public nextTo(direction: Directions): Location | undefined {
-        if( direction === 'N'){
-            return new MarsLocation(decreaseByOne(this.lat), this.lon)
+    public nextTo(direction: Directions): Location {
+        if (direction === 'N') {
+            return new MarsLocation(decreaseByOne(this.lat), this.lon, this.mars)
+        } else if (direction === 'E') {
+            return new MarsLocation(this.lat, increaseByOne(this.lon), this.mars)
+        } else if (direction === 'S') {
+            return new MarsLocation(increaseByOne(this.lat), this.lon, this.mars)
+        } else if (direction === 'W') {
+            return new MarsLocation(this.lat, decreaseByOne(this.lon), this.mars)
+        } else {
+            return this
         }
-        if( direction === 'E'){
-            return new MarsLocation(this.lat, increaseByOne(this.lon))
-        }
-        if( direction === 'S'){
-            return new MarsLocation(increaseByOne(this.lat), this.lon)
-        }
-        if( direction === 'W'){
-            return new MarsLocation(this.lat, decreaseByOne(this.lon))
-        }
-        return
     }
 
     public distanceFrom(other: Location): number {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return Math.abs(other.lat - this.lat) + Math.abs(other.lon - this.lon) ;
+        if (other instanceof MarsLocation) {
+            return this.mars.distanceBetween(this, other)
+        }
+        return 0
     }
 }
