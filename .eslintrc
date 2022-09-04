@@ -34,7 +34,7 @@
         "default": "array-simple"
       }
     ],
-    "@typescript-eslint/ban-ts-comment": "error",
+     "@typescript-eslint/ban-ts-comment": "warn",
     "@typescript-eslint/ban-types": [
       "error",
       {
