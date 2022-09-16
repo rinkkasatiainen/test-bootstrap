@@ -7,6 +7,7 @@
     "build": "yarn run tsc -p .",
     "test": "yarn run test:m; yarn run test:j",
     "test:m": "NODE_ENV=test ts-mocha test/**/**.spec.ts ",
+    "test-watch:m": "NODE_ENV=test ts-mocha --watch --watch-files src/**/*.ts, test/**/*.spec.ts",
     "test:j": "NODE_ENV=test jest test/**/**.test.ts",
     "test:w": "npm run test -- --watch",
     "lint": "eslint -- src test",
