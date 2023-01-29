@@ -1,5 +1,8 @@
-# Test Bootstrap   
+phpunit setup
+==========
 
-This is a project set up to start practicing (unit) testing in TypeScript.
+To run the tests just run:
 
-It has 2 common test 
+```
+phpunit --bootstrap vendor/autoload.php tests --filter testNotFailing
+```
