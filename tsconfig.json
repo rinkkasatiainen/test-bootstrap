@@ -1,38 +1,35 @@
 {
+  "compileOnSave": true,
   "compilerOptions": {
-    "outDir": "./lib",
-    "target": "es2019",
-    "module": "commonjs",
-    "strict": true,
-    "importHelpers": true,
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
-    "sourceMap": true,
-
-    "declaration": true,
-    "removeComments": true,
-    "noImplicitAny": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "strictNullChecks": true,
+    "target": "es5",
     "lib": [
-      "esnext",
-      "dom",
-      "es6"
+      "esnext"
     ],
-    "forceConsistentCasingInFileNames": true,
-    "rootDir": ".",
-    "baseUrl": "."
+    "module": "commonjs",
+    "sourceMap": true,
+    "outDir": "build",
+    "noEmitOnError": true,
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "forceConsistentCasingInFileNames": false,
+    "downlevelIteration": true,
+    "experimentalDecorators": true,
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+    "types": [
+      "node",
+      "mocha"
+    ]
   },
   "include": [
-    ".",
-    "./src/**/*.ts",
-    "./test/**/*.ts"
+    "./test/*.ts",
+    "./src/**.ts"
   ],
   "exclude": [
     "node_modules",
+    "build"
   ]
 }
