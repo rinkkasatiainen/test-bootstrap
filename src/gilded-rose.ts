@@ -1,7 +1,7 @@
 export class Item {
-    public name: string;
-    public sellIn: number;
-    public quality: number;
+    public name: string
+    public sellIn: number
+    public quality: number
 
     public constructor(name: string, sellIn: number, quality: number) {
         this.name = name
@@ -11,7 +11,7 @@ export class Item {
 }
 
 export class GildedRose {
-    private items: Item[];
+    private items: Item[]
 
     public constructor(items = [] as Item[]) {
         this.items = items

@@ -1,0 +1,7 @@
+[
+  {
+    "name": "any other",
+    "quality": 0,
+    "sellIn": 10
+  }
+]

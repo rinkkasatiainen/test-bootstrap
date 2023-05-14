@@ -1,0 +1,7 @@
+[
+  {
+    "name": "Sulfuras, Hand of Ragnaros",
+    "quality": 49,
+    "sellIn": 6
+  }
+]
