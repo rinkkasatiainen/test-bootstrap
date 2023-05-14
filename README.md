@@ -1,5 +1,5 @@
 # Test Bootstrap   
 
-This is a project set up to start practicing (unit) testing in TypeScript.
+Person Refactoring Kata, originally at [SammanCoaching Github](https://github.com/sammancoaching/Person-Refactoring-Kata)
 
-It has 2 common test 
+
