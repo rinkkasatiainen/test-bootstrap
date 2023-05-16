@@ -1,3 +1,3 @@
 export function calculate(): number {
-    return 1
+  return 1
 }
