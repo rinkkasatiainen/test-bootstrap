@@ -1,1 +1,1 @@
-export { Fraction, BuildFraction } from './src/calculate'
+export { Fraction, BuildFraction } from './src/example/calculate.js'
